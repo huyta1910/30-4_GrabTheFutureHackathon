@@ -63,6 +63,23 @@ class PassengerService:
             next_step=self._next_step_for(current_ride),
         )
 
+    def cancel_current_ride(self, passenger_id: UUID) -> RideRequestRead:
+        self._get_passenger(passenger_id)
+        current_ride = self.repository.get_current_ride(passenger_id)
+        if current_ride is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Passenger does not have an active ride request.",
+            )
+
+        if current_ride.status not in {"requested", "matching"}:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="This ride can no longer be cancelled by the passenger.",
+            )
+
+        return RideRequestRead.model_validate(self.repository.cancel_ride_request(current_ride))
+
     def get_ride_history(self, passenger_id: UUID, limit: int = 10) -> list[RideHistoryRead]:
         self._get_passenger(passenger_id)
         history = self.repository.list_ride_history(passenger_id=passenger_id, limit=limit)

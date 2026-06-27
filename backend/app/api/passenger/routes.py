@@ -79,6 +79,17 @@ async def get_ride_status(
     )
 
 
+@router.patch("/{passenger_id}/rides/current/cancel", response_model=ApiResponse[RideRequestRead])
+async def cancel_current_ride(
+    passenger_id: UUID,
+    service: PassengerServiceDependency,
+) -> ApiResponse[RideRequestRead]:
+    return ApiResponse(
+        message="Current ride request cancelled.",
+        data=service.cancel_current_ride(passenger_id),
+    )
+
+
 @router.get("/{passenger_id}/rides/history", response_model=ApiResponse[list[RideHistoryRead]])
 async def get_ride_history(
     passenger_id: UUID,

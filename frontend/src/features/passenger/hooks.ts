@@ -81,6 +81,21 @@ export function useRequestRide(passengerId: string) {
   });
 }
 
+export function useCancelCurrentRide(passengerId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => passengerApi.cancelCurrentRide(passengerId),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: passengerKeys.dashboard(passengerId) }),
+        queryClient.invalidateQueries({ queryKey: passengerKeys.rideStatus(passengerId) }),
+        queryClient.invalidateQueries({ queryKey: passengerKeys.rideHistory(passengerId) }),
+      ]);
+    },
+  });
+}
+
 export function useUpdatePassengerProfile(passengerId: string) {
   const queryClient = useQueryClient();
 

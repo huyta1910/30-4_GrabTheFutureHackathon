@@ -460,6 +460,9 @@ export const passengerApi = {
   requestRide(passengerId: string, payload: RideRequestPayload) {
     return unwrap<RideRequest>(apiClient.post(`/passengers/${passengerId}/rides`, payload));
   },
+  cancelCurrentRide(passengerId: string) {
+    return unwrap<RideRequest>(apiClient.patch(`/passengers/${passengerId}/rides/current/cancel`));
+  },
   getRideStatus(passengerId: string) {
     return unwrap<RideStatus>(apiClient.get(`/passengers/${passengerId}/rides/status`));
   },

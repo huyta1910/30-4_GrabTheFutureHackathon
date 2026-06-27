@@ -1,7 +1,8 @@
 import { Clock, Route } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useRideStatus } from "@/features/passenger/hooks";
+import { useCancelCurrentRide, useRideStatus } from "@/features/passenger/hooks";
 import { StatusPill } from "@/components/passenger/StatusPill";
 
 interface RideStatusPanelProps {
@@ -10,6 +11,7 @@ interface RideStatusPanelProps {
 
 export function RideStatusPanel({ passengerId }: RideStatusPanelProps) {
   const rideStatus = useRideStatus(passengerId);
+  const cancelRide = useCancelCurrentRide(passengerId);
 
   if (rideStatus.isLoading) {
     return (
@@ -68,6 +70,21 @@ export function RideStatusPanel({ passengerId }: RideStatusPanelProps) {
                 <span>{nextStep}</span>
               </div>
             </div>
+            {["requested", "matching"].includes(currentRide.status) ? (
+              <div className="grid gap-2">
+                {cancelRide.isError ? (
+                  <p className="text-sm text-destructive">Ride could not be cancelled.</p>
+                ) : null}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => cancelRide.mutate()}
+                  disabled={cancelRide.isPending}
+                >
+                  {cancelRide.isPending ? "Cancelling..." : "Cancel current ride"}
+                </Button>
+              </div>
+            ) : null}
           </>
         ) : (
           <p className="text-sm text-muted-foreground">{nextStep}</p>

@@ -54,6 +54,13 @@ class PassengerRepository(BaseRepository[Passenger]):
         )
         return self.session.scalars(statement).first()
 
+    def cancel_ride_request(self, booking: Booking) -> Booking:
+        booking.status = "cancelled"
+        self.session.add(booking)
+        self.session.commit()
+        self.session.refresh(booking)
+        return booking
+
     def list_ride_history(self, passenger_id: UUID, limit: int = 10) -> list[tuple[TripHistory, Booking]]:
         statement: Select[tuple[TripHistory, Booking]] = (
             select(TripHistory, Booking)
