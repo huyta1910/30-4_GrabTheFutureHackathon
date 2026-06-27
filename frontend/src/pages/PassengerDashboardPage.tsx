@@ -1,10 +1,5 @@
-import { PlaceholderPage } from "@/components/shared/PlaceholderPage";
+import { PassengerDashboard } from "@/components/passenger/PassengerDashboard";
 
 export function PassengerDashboardPage() {
-  return (
-    <PlaceholderPage
-      title="Passenger Dashboard"
-      description="Empty passenger dashboard page prepared for feature development."
-    />
-  );
+  return <PassengerDashboard passengerId="00000000-0000-0000-0000-000000000201" />;
 }
