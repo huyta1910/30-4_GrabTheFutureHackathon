@@ -5,6 +5,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
+from app.schemas.driver.geo import CongestionZone, GeoPoint
+
 
 class DriverTripStatus(str, Enum):
     assigned = "assigned"
@@ -31,6 +33,11 @@ class DriverTripDetail(DriverTripRead):
     dropoff_label: str | None = None
     requested_at: datetime | None = None
     estimated_fare: Decimal | None = None
+    pickup: GeoPoint | None = None
+    dropoff: GeoPoint | None = None
+    driver_position: GeoPoint | None = None
+    route: list[GeoPoint] = []
+    congestion_zones: list[CongestionZone] = []
 
 
 class TripStatusUpdate(BaseModel):

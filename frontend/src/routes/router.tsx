@@ -5,6 +5,7 @@ import { PublicLayout } from "@/layouts/PublicLayout";
 import { DriverDashboardPage } from "@/pages/driver/DriverDashboardPage";
 import { DriverEarningsPage } from "@/pages/driver/DriverEarningsPage";
 import { DriverNotificationsPage } from "@/pages/driver/DriverNotificationsPage";
+import { DriverPoolNavigatePage } from "@/pages/driver/DriverPoolNavigatePage";
 import { DriverPoolPage } from "@/pages/driver/DriverPoolPage";
 import { DriverProfilePage } from "@/pages/driver/DriverProfilePage";
 import { DriverTripsPage } from "@/pages/driver/DriverTripsPage";
@@ -40,6 +41,7 @@ export const router = createBrowserRouter([
           { path: "/dashboard/driver/trips", element: <DriverTripsPage /> },
           { path: "/dashboard/driver/earnings", element: <DriverEarningsPage /> },
           { path: "/dashboard/driver/pool", element: <DriverPoolPage /> },
+          { path: "/dashboard/driver/pool/:groupId", element: <DriverPoolNavigatePage /> },
           { path: "/dashboard/driver/notifications", element: <DriverNotificationsPage /> },
           { path: "/dashboard/driver/profile", element: <DriverProfilePage /> },
           { path: ROUTES.tripDetail, element: <TripDetailPage /> },

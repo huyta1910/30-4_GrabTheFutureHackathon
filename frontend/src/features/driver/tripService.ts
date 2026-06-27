@@ -2,7 +2,12 @@ import { apiClient } from "@/services/api/client";
 import type { ApiResponse } from "@/types/api";
 import { DRIVER_API } from "@/features/driver/constants";
 import { mapTrip, type RawDriverTrip } from "@/features/driver/driverService";
-import { toNullableNumber } from "@/features/driver/mappers";
+import {
+  mapCongestionZones,
+  mapGeoPoint,
+  mapGeoPoints,
+  toNullableNumber,
+} from "@/features/driver/mappers";
 import type {
   DriverTripDetail,
   DriverTripStatus,
@@ -10,11 +15,27 @@ import type {
   UpdateTripStatusPayload,
 } from "@/features/driver/types";
 
+interface RawGeo {
+  lat: number;
+  lng: number;
+}
+
 interface RawDriverTripDetail extends RawDriverTrip {
   pickup_label: string | null;
   dropoff_label: string | null;
   requested_at: string | null;
   estimated_fare: string | number | null;
+  pickup: RawGeo | null;
+  dropoff: RawGeo | null;
+  driver_position: RawGeo | null;
+  route: RawGeo[];
+  congestion_zones: {
+    lat: number;
+    lng: number;
+    radius_m: number;
+    severity: string;
+    label: string | null;
+  }[];
 }
 
 interface RawPaginatedTrips {
@@ -31,6 +52,11 @@ function mapTripDetail(raw: RawDriverTripDetail): DriverTripDetail {
     dropoffLabel: raw.dropoff_label,
     requestedAt: raw.requested_at,
     estimatedFare: toNullableNumber(raw.estimated_fare),
+    pickup: mapGeoPoint(raw.pickup),
+    dropoff: mapGeoPoint(raw.dropoff),
+    driverPosition: mapGeoPoint(raw.driver_position),
+    route: mapGeoPoints(raw.route),
+    congestionZones: mapCongestionZones(raw.congestion_zones),
   };
 }
 

@@ -6,6 +6,8 @@ export const DRIVER_API = {
     `/drivers/${driverId}/trips/${tripId}/status`,
   earnings: (driverId: string) => `/drivers/${driverId}/earnings`,
   poolSuggestions: (driverId: string) => `/drivers/${driverId}/pool-suggestions`,
+  poolDetail: (driverId: string, groupId: string) =>
+    `/drivers/${driverId}/pool-suggestions/${groupId}`,
   poolRespond: (driverId: string, groupId: string) =>
     `/drivers/${driverId}/pool-suggestions/${groupId}/respond`,
   notifications: (driverId: string) => `/drivers/${driverId}/notifications`,
@@ -23,6 +25,8 @@ export const driverQueryKeys = {
     [...driverQueryKeys.all, "earnings", driverId, period] as const,
   poolSuggestions: (driverId: string) =>
     [...driverQueryKeys.all, "pool", driverId] as const,
+  poolDetail: (driverId: string, groupId: string) =>
+    [...driverQueryKeys.all, "pool", driverId, groupId] as const,
   notifications: (driverId: string) =>
     [...driverQueryKeys.all, "notifications", driverId] as const,
   profile: (driverId: string) =>

@@ -7,11 +7,27 @@ from app.models.booking import Booking
 from app.models.trip_history import TripHistory
 from app.repositories.driver.trip_repository import DriverTripRepository
 from app.schemas.common import PaginatedResponse
+from app.schemas.driver.geo import GeoPoint
 from app.schemas.driver.trip import (
     DriverTripDetail,
     DriverTripStatus,
     TripStatusUpdate,
 )
+from app.services.driver.geo_mock import build_route, demo_congestion_zones, geocode
+
+# Trip statuses where a live tracking map is meaningful.
+_ACTIVE_STATUSES = {
+    DriverTripStatus.assigned.value,
+    DriverTripStatus.en_route.value,
+    DriverTripStatus.in_progress.value,
+}
+
+# Fraction of the route the driver has covered, per active status.
+_PROGRESS_BY_STATUS = {
+    DriverTripStatus.assigned.value: 0.0,
+    DriverTripStatus.en_route.value: 0.35,
+    DriverTripStatus.in_progress.value: 0.7,
+}
 
 # Allowed lifecycle transitions for a driver-managed trip.
 _ALLOWED_TRANSITIONS: dict[str, set[str]] = {
@@ -106,6 +122,17 @@ class TripService:
             detail.dropoff_label = booking.dropoff_label
             detail.requested_at = booking.requested_at
             detail.estimated_fare = booking.estimated_fare
+            detail.pickup = geocode(booking.pickup_label)
+            detail.dropoff = geocode(booking.dropoff_label)
+
+        # Live tracking geometry only for in-flight trips.
+        if trip.status in _ACTIVE_STATUSES and detail.pickup and detail.dropoff:
+            route = build_route([detail.pickup, detail.dropoff], avoid_congestion=True)
+            detail.route = route
+            detail.congestion_zones = demo_congestion_zones()
+            detail.driver_position = _interpolate(
+                route, _PROGRESS_BY_STATUS.get(trip.status, 0.0)
+            )
         return detail
 
     @staticmethod
@@ -114,3 +141,28 @@ class TripService:
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Trip not found",
         )
+
+
+def _interpolate(route: list[GeoPoint], progress: float) -> GeoPoint | None:
+    """Point at `progress` (0..1) along the polyline, by segment length."""
+    if not route:
+        return None
+    if len(route) == 1 or progress <= 0:
+        return route[0]
+    if progress >= 1:
+        return route[-1]
+
+    seg_lengths = [
+        ((route[i + 1].lat - route[i].lat) ** 2 + (route[i + 1].lng - route[i].lng) ** 2) ** 0.5
+        for i in range(len(route) - 1)
+    ]
+    total = sum(seg_lengths) or 1.0
+    target = progress * total
+    acc = 0.0
+    for i, seg in enumerate(seg_lengths):
+        if acc + seg >= target:
+            t = (target - acc) / seg if seg else 0.0
+            a, b = route[i], route[i + 1]
+            return GeoPoint(lat=a.lat + (b.lat - a.lat) * t, lng=a.lng + (b.lng - a.lng) * t)
+        acc += seg
+    return route[-1]

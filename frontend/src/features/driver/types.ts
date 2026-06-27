@@ -30,6 +30,11 @@ export interface DriverTripDetail extends DriverTrip {
   dropoffLabel: string | null;
   requestedAt: string | null;
   estimatedFare: number | null;
+  pickup: GeoPoint | null;
+  dropoff: GeoPoint | null;
+  driverPosition: GeoPoint | null;
+  route: GeoPoint[];
+  congestionZones: CongestionZone[];
 }
 
 export interface PaginatedTrips {
@@ -76,6 +81,23 @@ export interface EarningsSummary {
   daily: DailyEarning[];
 }
 
+// --- Geo (mock-AI contract) ---
+
+export interface GeoPoint {
+  lat: number;
+  lng: number;
+}
+
+export type CongestionSeverity = "low" | "medium" | "high";
+
+export interface CongestionZone {
+  lat: number;
+  lng: number;
+  radiusM: number;
+  severity: CongestionSeverity;
+  label: string | null;
+}
+
 // --- Pool Suggestions ---
 
 export interface PoolPassenger {
@@ -83,6 +105,19 @@ export interface PoolPassenger {
   dropoffLabel: string;
   estimatedFare: number | null;
   stopOrder: number;
+  pickup: GeoPoint | null;
+  dropoff: GeoPoint | null;
+}
+
+export type PoolStopType = "pickup" | "dropoff";
+
+export interface PoolStop {
+  sequence: number;
+  type: PoolStopType;
+  label: string;
+  passengerOrder: number;
+  point: GeoPoint | null;
+  legRoute: GeoPoint[];
 }
 
 export interface PoolSuggestion {
@@ -93,6 +128,10 @@ export interface PoolSuggestion {
   passengers: PoolPassenger[];
   totalEstimatedFare: number;
   createdAt: string;
+  driverStart: GeoPoint | null;
+  route: GeoPoint[];
+  congestionZones: CongestionZone[];
+  stops: PoolStop[];
 }
 
 export type PoolAction = "accept" | "decline";

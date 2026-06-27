@@ -1,4 +1,4 @@
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { PageTransition } from "@/components/motion/PageTransition";
 import { Card, CardContent } from "@/components/ui/card";
 import { PoolSuggestionCard } from "@/components/driver/pool/PoolSuggestionCard";
@@ -11,6 +11,7 @@ import { useRespondToPool } from "@/features/driver/hooks/useRespondToPool";
 
 export function DriverPoolPage() {
   const { session } = useAuth();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const driverId = searchParams.get("driverId") ?? session?.user.id;
 
@@ -19,6 +20,20 @@ export function DriverPoolPage() {
 
   const suggestions = suggestionsQuery.data ?? [];
   const isLive = Boolean(driverId) && !suggestionsQuery.isError;
+
+  const handleAccept = (groupId: string) => {
+    respondMutation.mutate(
+      { groupId, action: "accept" },
+      {
+        onSuccess: () => {
+          const suffix = searchParams.get("driverId")
+            ? `?driverId=${searchParams.get("driverId")}`
+            : "";
+          navigate(`/dashboard/driver/pool/${groupId}${suffix}`);
+        },
+      },
+    );
+  };
 
   return (
     <PageTransition>
@@ -83,7 +98,7 @@ export function DriverPoolPage() {
                 key={s.id}
                 suggestion={s}
                 isPending={respondMutation.isPending}
-                onAccept={(id) => respondMutation.mutate({ groupId: id, action: "accept" })}
+                onAccept={handleAccept}
                 onDecline={(id) =>
                   respondMutation.mutate({ groupId: id, action: "decline" })
                 }

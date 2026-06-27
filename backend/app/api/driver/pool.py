@@ -18,6 +18,19 @@ async def list_pool_suggestions(
     return ApiResponse(data=data, message="Pool suggestions")
 
 
+@router.get(
+    "/{driver_id}/pool-suggestions/{group_id}",
+    response_model=ApiResponse[PoolSuggestion],
+)
+async def get_pool_suggestion(
+    driver_id: UUID,
+    group_id: UUID,
+    service: PoolServiceDep,
+) -> ApiResponse[PoolSuggestion]:
+    data = service.get_suggestion(group_id)
+    return ApiResponse(data=data, message="Pool suggestion")
+
+
 @router.patch(
     "/{driver_id}/pool-suggestions/{group_id}/respond",
     response_model=ApiResponse[PoolSuggestion],

@@ -1,6 +1,8 @@
 import { ArrowRight, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { MapLegend } from "@/components/driver/map/MapLegend";
+import { RouteMap, type MapMarker } from "@/components/driver/map/RouteMap";
 import { formatDriverCurrency, formatDriverDateTime } from "@/features/driver/format";
 import type { PoolSuggestion } from "@/features/driver/types";
 
@@ -11,6 +13,29 @@ interface PoolSuggestionCardProps {
   onDecline: (id: string) => void;
 }
 
+function buildMarkers(suggestion: PoolSuggestion): MapMarker[] {
+  const markers: MapMarker[] = [];
+  for (const p of suggestion.passengers) {
+    if (p.pickup) {
+      markers.push({
+        position: p.pickup,
+        kind: "pickup",
+        order: p.stopOrder,
+        label: `Đón ${p.stopOrder}: ${p.pickupLabel}`,
+      });
+    }
+    if (p.dropoff) {
+      markers.push({
+        position: p.dropoff,
+        kind: "dropoff",
+        order: p.stopOrder,
+        label: `Trả ${p.stopOrder}: ${p.dropoffLabel}`,
+      });
+    }
+  }
+  return markers;
+}
+
 export function PoolSuggestionCard({
   suggestion,
   isPending,
@@ -18,6 +43,8 @@ export function PoolSuggestionCard({
   onDecline,
 }: PoolSuggestionCardProps) {
   const isResponded = suggestion.status !== "pending";
+  const markers = buildMarkers(suggestion);
+  const hasMap = markers.length > 0;
 
   return (
     <Card className="border-primary/20 bg-primary/5">
@@ -60,6 +87,25 @@ export function PoolSuggestionCard({
           ))}
         </div>
 
+        {hasMap ? (
+          <div className="flex flex-col gap-2">
+            <RouteMap
+              markers={markers}
+              route={suggestion.route}
+              congestionZones={suggestion.congestionZones}
+              heightClass="h-72"
+            />
+            <MapLegend
+              items={[
+                { color: "#10b981", label: "Điểm đón" },
+                { color: "#3b82f6", label: "Điểm trả" },
+                { color: "#6366f1", label: "Tuyến né kẹt (AI)" },
+                { color: "#ef4444", label: "Vùng ngập/kẹt" },
+              ]}
+            />
+          </div>
+        ) : null}
+
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Total estimated</span>
           <span className="text-lg font-semibold">
@@ -69,7 +115,7 @@ export function PoolSuggestionCard({
       </CardContent>
 
       {!isResponded ? (
-        <CardFooter className="flex gap-2 px-5 pb-5 pt-0">
+        <div className="flex gap-2 px-5 pb-5">
           <Button
             className="flex-1"
             disabled={isPending}
@@ -85,13 +131,13 @@ export function PoolSuggestionCard({
           >
             Decline
           </Button>
-        </CardFooter>
+        </div>
       ) : (
-        <CardFooter className="px-5 pb-5 pt-0">
+        <div className="px-5 pb-5">
           <span className="text-sm text-muted-foreground capitalize">
             Pool {suggestion.status}
           </span>
-        </CardFooter>
+        </div>
       )}
     </Card>
   );
