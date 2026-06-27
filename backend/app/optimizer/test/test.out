@@ -1,0 +1,402 @@
+[
+  {
+    "case_name": "case_001",
+    "total_cost": 28.954102647728572
+  },
+  {
+    "case_name": "case_002",
+    "total_cost": 72.4675370772105
+  },
+  {
+    "case_name": "case_003",
+    "total_cost": 78.71193168148582
+  },
+  {
+    "case_name": "case_004",
+    "total_cost": 51.42882488155159
+  },
+  {
+    "case_name": "case_005",
+    "total_cost": 53.58863512281927
+  },
+  {
+    "case_name": "case_006",
+    "total_cost": 67.62632251340989
+  },
+  {
+    "case_name": "case_007",
+    "total_cost": 51.67515210589373
+  },
+  {
+    "case_name": "case_008",
+    "total_cost": 63.175508940765035
+  },
+  {
+    "case_name": "case_009",
+    "total_cost": 78.46571725429033
+  },
+  {
+    "case_name": "case_010",
+    "total_cost": 67.75258317883097
+  },
+  {
+    "case_name": "case_011",
+    "total_cost": 81.68100861680341
+  },
+  {
+    "case_name": "case_012",
+    "total_cost": 46.65949902837278
+  },
+  {
+    "case_name": "case_013",
+    "total_cost": 64.40322270415137
+  },
+  {
+    "case_name": "case_014",
+    "total_cost": 81.9106510659729
+  },
+  {
+    "case_name": "case_015",
+    "total_cost": 89.98966835296702
+  },
+  {
+    "case_name": "case_016",
+    "total_cost": 58.82364802894292
+  },
+  {
+    "case_name": "case_017",
+    "total_cost": 99.90431062802789
+  },
+  {
+    "case_name": "case_018",
+    "total_cost": 82.64315857518747
+  },
+  {
+    "case_name": "case_019",
+    "total_cost": 66.29597304767334
+  },
+  {
+    "case_name": "case_020",
+    "total_cost": 58.36743384678923
+  },
+  {
+    "case_name": "case_021",
+    "total_cost": 49.521971298374545
+  },
+  {
+    "case_name": "case_022",
+    "total_cost": 84.04285149316507
+  },
+  {
+    "case_name": "case_023",
+    "total_cost": 84.60075944940561
+  },
+  {
+    "case_name": "case_024",
+    "total_cost": 44.43522579728513
+  },
+  {
+    "case_name": "case_025",
+    "total_cost": 48.6941470000581
+  },
+  {
+    "case_name": "case_026",
+    "total_cost": 61.881113098376034
+  },
+  {
+    "case_name": "case_027",
+    "total_cost": 54.07342387135803
+  },
+  {
+    "case_name": "case_028",
+    "total_cost": 51.63881268685279
+  },
+  {
+    "case_name": "case_029",
+    "total_cost": 69.62076281321777
+  },
+  {
+    "case_name": "case_030",
+    "total_cost": 43.265600217704645
+  },
+  {
+    "case_name": "case_031",
+    "total_cost": 80.62050433321888
+  },
+  {
+    "case_name": "case_032",
+    "total_cost": 88.17234082999671
+  },
+  {
+    "case_name": "case_033",
+    "total_cost": 27.521526143480493
+  },
+  {
+    "case_name": "case_034",
+    "total_cost": 70.58030680634197
+  },
+  {
+    "case_name": "case_035",
+    "total_cost": 66.76472123641102
+  },
+  {
+    "case_name": "case_036",
+    "total_cost": 64.75553528333448
+  },
+  {
+    "case_name": "case_037",
+    "total_cost": 38.43886542133537
+  },
+  {
+    "case_name": "case_038",
+    "total_cost": 76.03668794866675
+  },
+  {
+    "case_name": "case_039",
+    "total_cost": 64.9895857320406
+  },
+  {
+    "case_name": "case_040",
+    "total_cost": 83.03453463083335
+  },
+  {
+    "case_name": "case_041",
+    "total_cost": 97.91807765814369
+  },
+  {
+    "case_name": "case_042",
+    "total_cost": 71.2787846704203
+  },
+  {
+    "case_name": "case_043",
+    "total_cost": 54.339336047013944
+  },
+  {
+    "case_name": "case_044",
+    "total_cost": 86.01718183646233
+  },
+  {
+    "case_name": "case_045",
+    "total_cost": 83.38664528496327
+  },
+  {
+    "case_name": "case_046",
+    "total_cost": 81.49183578564802
+  },
+  {
+    "case_name": "case_047",
+    "total_cost": 78.60914927608016
+  },
+  {
+    "case_name": "case_048",
+    "total_cost": 47.03503779988494
+  },
+  {
+    "case_name": "case_049",
+    "total_cost": 74.51884398129667
+  },
+  {
+    "case_name": "case_050",
+    "total_cost": 62.462406980472615
+  },
+  {
+    "case_name": "case_051",
+    "total_cost": 72.18762126113306
+  },
+  {
+    "case_name": "case_052",
+    "total_cost": 68.37883834934479
+  },
+  {
+    "case_name": "case_053",
+    "total_cost": 62.78240629193208
+  },
+  {
+    "case_name": "case_054",
+    "total_cost": 75.65126141119232
+  },
+  {
+    "case_name": "case_055",
+    "total_cost": 72.66983226817618
+  },
+  {
+    "case_name": "case_056",
+    "total_cost": 49.481169438263876
+  },
+  {
+    "case_name": "case_057",
+    "total_cost": 42.54140171349375
+  },
+  {
+    "case_name": "case_058",
+    "total_cost": 49.512482970688396
+  },
+  {
+    "case_name": "case_059",
+    "total_cost": 70.1909677621706
+  },
+  {
+    "case_name": "case_060",
+    "total_cost": 54.706815078451754
+  },
+  {
+    "case_name": "case_061",
+    "total_cost": 57.63269996535665
+  },
+  {
+    "case_name": "case_062",
+    "total_cost": 48.679733772047356
+  },
+  {
+    "case_name": "case_063",
+    "total_cost": 86.06599600013911
+  },
+  {
+    "case_name": "case_064",
+    "total_cost": 69.07109138758567
+  },
+  {
+    "case_name": "case_065",
+    "total_cost": 64.22908670075742
+  },
+  {
+    "case_name": "case_066",
+    "total_cost": 66.72486906546229
+  },
+  {
+    "case_name": "case_067",
+    "total_cost": 93.1802310597024
+  },
+  {
+    "case_name": "case_068",
+    "total_cost": 79.54949541239007
+  },
+  {
+    "case_name": "case_069",
+    "total_cost": 76.75738124649263
+  },
+  {
+    "case_name": "case_070",
+    "total_cost": 61.41635383166629
+  },
+  {
+    "case_name": "case_071",
+    "total_cost": 56.575470156627496
+  },
+  {
+    "case_name": "case_072",
+    "total_cost": 57.482714622026926
+  },
+  {
+    "case_name": "case_073",
+    "total_cost": 50.667885847959724
+  },
+  {
+    "case_name": "case_074",
+    "total_cost": 48.66692316511754
+  },
+  {
+    "case_name": "case_075",
+    "total_cost": 57.321797028249776
+  },
+  {
+    "case_name": "case_076",
+    "total_cost": 51.98252011043248
+  },
+  {
+    "case_name": "case_077",
+    "total_cost": 97.24501670756155
+  },
+  {
+    "case_name": "case_078",
+    "total_cost": 53.947287935989195
+  },
+  {
+    "case_name": "case_079",
+    "total_cost": 69.00304074484572
+  },
+  {
+    "case_name": "case_080",
+    "total_cost": 75.26243255371173
+  },
+  {
+    "case_name": "case_081",
+    "total_cost": 65.04133089237621
+  },
+  {
+    "case_name": "case_082",
+    "total_cost": 37.151443274276616
+  },
+  {
+    "case_name": "case_083",
+    "total_cost": 63.12235273717488
+  },
+  {
+    "case_name": "case_084",
+    "total_cost": 55.12702853733541
+  },
+  {
+    "case_name": "case_085",
+    "total_cost": 58.226012806068105
+  },
+  {
+    "case_name": "case_086",
+    "total_cost": 76.13370065689604
+  },
+  {
+    "case_name": "case_087",
+    "total_cost": 87.87391459848928
+  },
+  {
+    "case_name": "case_088",
+    "total_cost": 64.2091095882121
+  },
+  {
+    "case_name": "case_089",
+    "total_cost": 43.547401815814396
+  },
+  {
+    "case_name": "case_090",
+    "total_cost": 55.17589836986291
+  },
+  {
+    "case_name": "case_091",
+    "total_cost": 55.92198676447025
+  },
+  {
+    "case_name": "case_092",
+    "total_cost": 83.19939804324983
+  },
+  {
+    "case_name": "case_093",
+    "total_cost": 55.239926685758554
+  },
+  {
+    "case_name": "case_094",
+    "total_cost": 59.43509531719477
+  },
+  {
+    "case_name": "case_095",
+    "total_cost": 59.35573091750112
+  },
+  {
+    "case_name": "case_096",
+    "total_cost": 71.69128420235025
+  },
+  {
+    "case_name": "case_097",
+    "total_cost": 71.41006682356624
+  },
+  {
+    "case_name": "case_098",
+    "total_cost": 87.99156725214655
+  },
+  {
+    "case_name": "case_099",
+    "total_cost": 57.12842295184948
+  },
+  {
+    "case_name": "case_100",
+    "total_cost": 100.2736291536794
+  }
+]
