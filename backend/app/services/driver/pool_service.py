@@ -31,7 +31,9 @@ class PoolService:
             )
         return self._to_suggestion(group)
 
-    def respond(self, group_id: UUID, payload: PoolRespondPayload) -> PoolSuggestion:
+    def respond(
+        self, driver_id: UUID, group_id: UUID, payload: PoolRespondPayload
+    ) -> PoolSuggestion:
         group = self._pools.get(group_id)
         if group is None:
             raise HTTPException(
@@ -43,8 +45,20 @@ class PoolService:
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"Cannot respond to pool with status '{group.status}'",
             )
-        group.status = "active" if payload.action == "accept" else "declined"
-        self._pools.save(group)
+
+        if payload.action == "decline":
+            group.status = "declined"
+            self._pools.save(group)
+            return self._to_suggestion(group)
+
+        driver = self._pools.get_driver(driver_id)
+        if driver is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Driver not found",
+            )
+        members_with_bookings = self._pools.get_members_with_bookings(group.id)
+        self._pools.confirm_assignment(group, driver, members_with_bookings)
         return self._to_suggestion(group)
 
     def _to_suggestion(self, group) -> PoolSuggestion:
@@ -117,6 +131,7 @@ class PoolService:
         return PoolSuggestion(
             id=group.id,
             status=group.status,
+            driver_id=group.driver_id,
             origin_area=group.origin_area,
             destination_area=group.destination_area,
             passengers=passengers,

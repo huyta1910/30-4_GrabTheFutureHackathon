@@ -29,6 +29,16 @@ _PROGRESS_BY_STATUS = {
     DriverTripStatus.in_progress.value: 0.7,
 }
 
+# Booking status mirrored back to the passenger for each driver trip status,
+# so passenger ride-status reflects what the driver is doing.
+_BOOKING_STATUS_FOR_TRIP = {
+    DriverTripStatus.assigned.value: "assigned",
+    DriverTripStatus.en_route.value: "assigned",
+    DriverTripStatus.in_progress.value: "in_progress",
+    DriverTripStatus.completed.value: "completed",
+    DriverTripStatus.cancelled.value: "cancelled",
+}
+
 # Allowed lifecycle transitions for a driver-managed trip.
 _ALLOWED_TRANSITIONS: dict[str, set[str]] = {
     DriverTripStatus.assigned.value: {
@@ -98,7 +108,11 @@ class TripService:
             if trip.total_fare is None and booking is not None:
                 trip.total_fare = booking.estimated_fare
 
-        saved = self._trips.save(trip)
+        # Mirror the lifecycle onto the booking so the passenger sees progress.
+        if booking is not None:
+            booking.status = _BOOKING_STATUS_FOR_TRIP.get(target, booking.status)
+
+        saved = self._trips.save(trip, booking)
         return self._to_detail(saved, booking)
 
     def _assert_transition_allowed(self, current: str, target: str) -> None:

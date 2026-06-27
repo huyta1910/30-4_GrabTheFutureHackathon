@@ -117,8 +117,10 @@ class DriverTripRepository:
             return None
         return row[0], row[1]
 
-    def save(self, trip: TripHistory) -> TripHistory:
+    def save(self, trip: TripHistory, booking: Booking | None = None) -> TripHistory:
         self.session.add(trip)
+        if booking is not None:
+            self.session.add(booking)
         self.session.commit()
         self.session.refresh(trip)
         return trip

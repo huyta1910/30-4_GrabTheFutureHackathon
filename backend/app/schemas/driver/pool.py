@@ -34,6 +34,7 @@ class PoolStop(BaseModel):
 class PoolSuggestion(BaseModel):
     id: UUID
     status: str
+    driver_id: UUID | None = None
     origin_area: str | None
     destination_area: str | None
     passengers: list[PoolPassenger]

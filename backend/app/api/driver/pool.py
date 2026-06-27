@@ -41,5 +41,5 @@ async def respond_to_pool(
     payload: PoolRespondPayload,
     service: PoolServiceDep,
 ) -> ApiResponse[PoolSuggestion]:
-    data = service.respond(group_id, payload)
+    data = service.respond(driver_id, group_id, payload)
     return ApiResponse(data=data, message=f"Pool {payload.action}ed")

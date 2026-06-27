@@ -8,6 +8,8 @@ from sqlalchemy.orm import Session
 from app.models.booking import Booking
 from app.models.notification import Notification
 from app.models.passenger import Passenger
+from app.models.ride_pool_group import RidePoolGroup
+from app.models.ride_pool_member import RidePoolMember
 from app.models.trip_history import TripHistory
 from app.repositories.base import BaseRepository
 
@@ -29,6 +31,7 @@ class PassengerRepository(BaseRepository[Passenger]):
     def create_ride_request(
         self,
         passenger_id: UUID,
+        user_id: UUID,
         pickup_label: str,
         dropoff_label: str,
         pickup_latitude: Decimal | None,
@@ -44,11 +47,43 @@ class PassengerRepository(BaseRepository[Passenger]):
             pickup_longitude=pickup_longitude,
             dropoff_latitude=dropoff_latitude,
             dropoff_longitude=dropoff_longitude,
-            status="requested",
+            status="matching",
             requested_at=datetime.now(UTC),
             estimated_fare=None,
         )
         self.session.add(booking)
+        self.session.flush()
+
+        # Mock-AI matching glue: every new request enters the pool queue as a
+        # pending group so drivers can see and accept it. The real AI matcher
+        # will replace this by grouping compatible bookings into shared pools.
+        group = RidePoolGroup(
+            status="pending",
+            origin_area=pickup_label,
+            destination_area=dropoff_label,
+        )
+        self.session.add(group)
+        self.session.flush()
+        self.session.add(
+            RidePoolMember(
+                ride_pool_group_id=group.id,
+                booking_id=booking.id,
+                status="pending",
+            )
+        )
+
+        self.session.add(
+            Notification(
+                user_id=user_id,
+                title="Looking for a pool",
+                body=(
+                    f"We are matching your ride from {pickup_label} to "
+                    f"{dropoff_label} with nearby drivers."
+                ),
+                status="unread",
+            )
+        )
+
         self.session.commit()
         self.session.refresh(booking)
         return booking
