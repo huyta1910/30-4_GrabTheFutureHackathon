@@ -52,6 +52,10 @@ class PassengerService:
             passenger_id=passenger_id,
             pickup_label=payload.pickup_label,
             dropoff_label=payload.dropoff_label,
+            pickup_latitude=payload.pickup_latitude,
+            pickup_longitude=payload.pickup_longitude,
+            dropoff_latitude=payload.dropoff_latitude,
+            dropoff_longitude=payload.dropoff_longitude,
         )
         return RideRequestRead.model_validate(booking)
 
@@ -72,6 +76,10 @@ class PassengerService:
                 booking_id=booking.id,
                 pickup_label=booking.pickup_label,
                 dropoff_label=booking.dropoff_label,
+                pickup_latitude=booking.pickup_latitude,
+                pickup_longitude=booking.pickup_longitude,
+                dropoff_latitude=booking.dropoff_latitude,
+                dropoff_longitude=booking.dropoff_longitude,
                 status=trip.status,
                 requested_at=booking.requested_at,
                 completed_at=trip.completed_at,

@@ -57,8 +57,14 @@ class PoolService:
             fare = booking.estimated_fare if booking else None
             pickup_label = booking.pickup_label if booking else "Unknown"
             dropoff_label = booking.dropoff_label if booking else "Unknown"
-            pickup = geocode(pickup_label)
-            dropoff = geocode(dropoff_label)
+            pickup = _booking_point(
+                booking.pickup_latitude if booking else None,
+                booking.pickup_longitude if booking else None,
+            ) or geocode(pickup_label)
+            dropoff = _booking_point(
+                booking.dropoff_latitude if booking else None,
+                booking.dropoff_longitude if booking else None,
+            ) or geocode(dropoff_label)
             if pickup:
                 pickups.append(pickup)
             if dropoff:
@@ -134,3 +140,9 @@ def _leg_route(prev: GeoPoint | None, cur: GeoPoint | None) -> list[GeoPoint]:
     if prev is None or (prev.lat == cur.lat and prev.lng == cur.lng):
         return [cur]
     return build_route([prev, cur], avoid_congestion=True)
+
+
+def _booking_point(lat, lng) -> GeoPoint | None:
+    if lat is None or lng is None:
+        return None
+    return GeoPoint(lat=float(lat), lng=float(lng))

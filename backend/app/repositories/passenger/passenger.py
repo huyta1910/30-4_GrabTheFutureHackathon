@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from decimal import Decimal
 from uuid import UUID
 
 from sqlalchemy import Select, func, select
@@ -30,11 +31,19 @@ class PassengerRepository(BaseRepository[Passenger]):
         passenger_id: UUID,
         pickup_label: str,
         dropoff_label: str,
+        pickup_latitude: Decimal | None,
+        pickup_longitude: Decimal | None,
+        dropoff_latitude: Decimal | None,
+        dropoff_longitude: Decimal | None,
     ) -> Booking:
         booking = Booking(
             passenger_id=passenger_id,
             pickup_label=pickup_label,
             dropoff_label=dropoff_label,
+            pickup_latitude=pickup_latitude,
+            pickup_longitude=pickup_longitude,
+            dropoff_latitude=dropoff_latitude,
+            dropoff_longitude=dropoff_longitude,
             status="requested",
             requested_at=datetime.now(UTC),
             estimated_fare=None,

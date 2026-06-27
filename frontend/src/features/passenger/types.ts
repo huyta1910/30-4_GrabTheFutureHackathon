@@ -16,6 +16,10 @@ export interface RideRequest {
   passenger_id: string;
   pickup_label: string;
   dropoff_label: string;
+  pickup_latitude: string | null;
+  pickup_longitude: string | null;
+  dropoff_latitude: string | null;
+  dropoff_longitude: string | null;
   status: RideStatusName;
   requested_at: string;
   estimated_fare: string | null;
@@ -31,6 +35,10 @@ export interface RideHistoryItem {
   booking_id: string;
   pickup_label: string;
   dropoff_label: string;
+  pickup_latitude: string | null;
+  pickup_longitude: string | null;
+  dropoff_latitude: string | null;
+  dropoff_longitude: string | null;
   status: string;
   requested_at: string;
   completed_at: string | null;
@@ -56,6 +64,10 @@ export interface PassengerDashboard {
 export interface RideRequestPayload {
   pickup_label: string;
   dropoff_label: string;
+  pickup_latitude?: number | null;
+  pickup_longitude?: number | null;
+  dropoff_latitude?: number | null;
+  dropoff_longitude?: number | null;
 }
 
 export interface PassengerProfilePayload {

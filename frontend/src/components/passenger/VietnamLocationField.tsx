@@ -21,6 +21,7 @@ interface VietnamLocationFieldProps {
   icon: ReactNode;
   value: string;
   onChange: (value: string) => void;
+  onCoordinatesChange?: (coordinates: DeviceCoordinates | null) => void;
   disabled?: boolean;
   error?: string;
   placeholder?: string;
@@ -77,6 +78,7 @@ export function VietnamLocationField({
   icon,
   value,
   onChange,
+  onCoordinatesChange,
   disabled = false,
   error,
   placeholder,
@@ -141,6 +143,7 @@ export function VietnamLocationField({
   const updateAddressPart = (key: keyof AddressParts, nextValue: string) => {
     const nextParts = { ...addressParts, [key]: nextValue };
     setAddressParts(nextParts);
+    onCoordinatesChange?.(null);
     onChange(composeAddress(nextParts));
   };
 
@@ -155,6 +158,7 @@ export function VietnamLocationField({
       provinceCode,
     };
     setAddressParts(nextParts);
+    onCoordinatesChange?.(null);
     onChange(composeAddress(nextParts));
   };
 
@@ -165,6 +169,7 @@ export function VietnamLocationField({
       ward: ward?.name ?? "",
     };
     setAddressParts(nextParts);
+    onCoordinatesChange?.(null);
     onChange(composeAddress(nextParts));
   };
 
@@ -181,6 +186,7 @@ export function VietnamLocationField({
       provinceCode:
         provinces.data?.find((province) => province.name === location.province)?.code ?? null,
     }));
+    onCoordinatesChange?.(null);
     onChange(formattedLocation);
   };
 
@@ -195,6 +201,10 @@ export function VietnamLocationField({
       provinceCode: matchedProvince?.code ?? null,
     };
     setAddressParts(nextParts);
+    onCoordinatesChange?.({
+      latitude: suggestion.latitude,
+      longitude: suggestion.longitude,
+    });
     onChange(composeAddress(nextParts) || suggestion.label);
     normalizeLocation.mutate(suggestion.label);
   };

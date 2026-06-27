@@ -122,8 +122,14 @@ class TripService:
             detail.dropoff_label = booking.dropoff_label
             detail.requested_at = booking.requested_at
             detail.estimated_fare = booking.estimated_fare
-            detail.pickup = geocode(booking.pickup_label)
-            detail.dropoff = geocode(booking.dropoff_label)
+            detail.pickup = _booking_point(
+                booking.pickup_latitude,
+                booking.pickup_longitude,
+            ) or geocode(booking.pickup_label)
+            detail.dropoff = _booking_point(
+                booking.dropoff_latitude,
+                booking.dropoff_longitude,
+            ) or geocode(booking.dropoff_label)
 
         # Live tracking geometry only for in-flight trips.
         if trip.status in _ACTIVE_STATUSES and detail.pickup and detail.dropoff:
@@ -166,3 +172,9 @@ def _interpolate(route: list[GeoPoint], progress: float) -> GeoPoint | None:
             return GeoPoint(lat=a.lat + (b.lat - a.lat) * t, lng=a.lng + (b.lng - a.lng) * t)
         acc += seg
     return route[-1]
+
+
+def _booking_point(lat, lng) -> GeoPoint | None:
+    if lat is None or lng is None:
+        return None
+    return GeoPoint(lat=float(lat), lng=float(lng))

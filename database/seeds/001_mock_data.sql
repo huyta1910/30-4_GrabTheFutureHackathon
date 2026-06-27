@@ -22,13 +22,29 @@ VALUES
   ('00000000-0000-0000-0000-000000000402', 'pending', 'Phường Bến Nghé, Thành phố Hồ Chí Minh', 'Phường Bình Thạnh, Thành phố Hồ Chí Minh')
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO bookings (id, passenger_id, pickup_label, dropoff_label, status, requested_at, estimated_fare)
+INSERT INTO bookings (
+  id,
+  passenger_id,
+  pickup_label,
+  dropoff_label,
+  pickup_latitude,
+  pickup_longitude,
+  dropoff_latitude,
+  dropoff_longitude,
+  status,
+  requested_at,
+  estimated_fare
+)
 VALUES
   (
     '00000000-0000-0000-0000-000000000601',
     '00000000-0000-0000-0000-000000000201',
     '01 Công xã Paris, Phường Sài Gòn, Thành phố Hồ Chí Minh',
     '720A Điện Biên Phủ, Phường Bình Thạnh, Thành phố Hồ Chí Minh',
+    10.779783,
+    106.699018,
+    10.801421,
+    106.714710,
     'matching',
     NOW() - INTERVAL '10 minutes',
     52000.00
@@ -38,6 +54,10 @@ VALUES
     '00000000-0000-0000-0000-000000000202',
     '22 Lê Duẩn, Phường Sài Gòn, Thành phố Hồ Chí Minh',
     '2 Nguyễn Hữu Cảnh, Phường Bình Thạnh, Thành phố Hồ Chí Minh',
+    10.781761,
+    106.701623,
+    10.790457,
+    106.718821,
     'matching',
     NOW() - INTERVAL '8 minutes',
     47000.00
