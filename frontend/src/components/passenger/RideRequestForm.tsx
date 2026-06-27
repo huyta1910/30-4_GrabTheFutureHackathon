@@ -3,7 +3,7 @@ import { MapPin, Navigation } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { VietnamLocationField } from "@/components/passenger/VietnamLocationField";
 import { useRequestRide } from "@/features/passenger/hooks";
 import {
   rideRequestSchema,
@@ -38,36 +38,26 @@ export function RideRequestForm({ passengerId, disabled = false }: RideRequestFo
       <CardContent>
         <form className="grid gap-4" onSubmit={onSubmit}>
           <div className="grid gap-2">
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <MapPin className="h-4 w-4" aria-hidden="true" />
-              Pickup
-            </div>
-            <Input
-              {...form.register("pickup_label")}
-              aria-invalid={Boolean(form.formState.errors.pickup_label)}
+            <VietnamLocationField
+              label="Pickup"
+              icon={<MapPin className="h-4 w-4" aria-hidden="true" />}
+              value={form.watch("pickup_label")}
+              onChange={(value) => form.setValue("pickup_label", value, { shouldValidate: true })}
               placeholder="Current location or pickup area"
               disabled={disabled || requestRide.isPending}
+              error={form.formState.errors.pickup_label?.message}
             />
-            {form.formState.errors.pickup_label ? (
-              <p className="text-sm text-destructive">{form.formState.errors.pickup_label.message}</p>
-            ) : null}
           </div>
           <div className="grid gap-2">
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <Navigation className="h-4 w-4" aria-hidden="true" />
-              Dropoff
-            </div>
-            <Input
-              {...form.register("dropoff_label")}
-              aria-invalid={Boolean(form.formState.errors.dropoff_label)}
+            <VietnamLocationField
+              label="Dropoff"
+              icon={<Navigation className="h-4 w-4" aria-hidden="true" />}
+              value={form.watch("dropoff_label")}
+              onChange={(value) => form.setValue("dropoff_label", value, { shouldValidate: true })}
               placeholder="Destination"
               disabled={disabled || requestRide.isPending}
+              error={form.formState.errors.dropoff_label?.message}
             />
-            {form.formState.errors.dropoff_label ? (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.dropoff_label.message}
-              </p>
-            ) : null}
           </div>
           {requestRide.isError ? (
             <p className="text-sm text-destructive">Ride request could not be created.</p>

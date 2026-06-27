@@ -94,3 +94,9 @@ export function useMarkPassengerNotificationRead(passengerId: string) {
     },
   });
 }
+
+export function useNormalizeVietnamLocation() {
+  return useMutation({
+    mutationFn: (input: string) => passengerApi.normalizeVietnamLocation(input),
+  });
+}

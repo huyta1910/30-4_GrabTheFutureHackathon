@@ -63,3 +63,25 @@ export interface PassengerProfilePayload {
 }
 
 export type RideStatusName = "requested" | "matching" | "assigned" | "in_progress" | string;
+
+export interface VietnamAdministrativeLocation {
+  province: string;
+  commune_or_ward: string;
+  administrative_code: string;
+  confidence: number;
+}
+
+export type LocationNormalizationStatus =
+  | "success"
+  | "ambiguous"
+  | "need_clarification"
+  | "not_found";
+
+export interface LocationNormalizationResult {
+  status: LocationNormalizationStatus;
+  input: string;
+  normalized_input: string;
+  matched_location: VietnamAdministrativeLocation | null;
+  reasoning: string;
+  alternatives: VietnamAdministrativeLocation[];
+}
