@@ -3,7 +3,8 @@
 -- Identity map (frontend hardcodes / overrides these ids):
 --   passenger A  -> passengers.id ...201 (users ...101)   [PassengerDashboardPage hardcodes ...201]
 --   passenger B  -> passengers.id ...202 (users ...103)   [backend-only, feeds the driver demo]
---   driver       -> drivers.id     ...301 (users ...102)  [?driverId=...301 override]
+--   drivers      -> drivers.id     ...301-...310 (users ...102, ...104-...112)
+--   demo driver  -> drivers.id     ...301 (users ...102)  [?driverId=...301 override]
 --
 -- Demo narrative (optimised for testing the live flow from the UI):
 --   * Passenger A starts with NO active ride (only completed history) so the
