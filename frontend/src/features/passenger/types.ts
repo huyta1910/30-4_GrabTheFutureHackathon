@@ -51,6 +51,7 @@ export interface PassengerNotification {
   title: string;
   body: string;
   status: "read" | "unread" | string;
+  category: "general" | "weather_alert" | string;
   created_at: string;
 }
 

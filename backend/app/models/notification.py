@@ -18,3 +18,5 @@ class Notification(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     title: Mapped[str] = mapped_column(String(160), nullable=False)
     body: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="unread")
+    # Distinguishes alert types, e.g. "general" or "weather_alert".
+    category: Mapped[str] = mapped_column(String(50), nullable=False, default="general")

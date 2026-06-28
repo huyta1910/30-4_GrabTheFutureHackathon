@@ -104,3 +104,53 @@ class PoolRepository:
         self.session.commit()
         self.session.refresh(group)
         return group
+
+    def complete_pool(
+        self,
+        group: RidePoolGroup,
+        driver: Driver,
+        members_with_bookings: list[tuple[RidePoolMember, Booking | None]],
+    ) -> RidePoolGroup:
+        """Finish a pooled ride: complete every trip + booking and notify riders."""
+        from datetime import datetime, timezone
+
+        now = datetime.now(timezone.utc)
+        group.status = "completed"
+        self.session.add(group)
+
+        for _member, booking in members_with_bookings:
+            if booking is None:
+                continue
+            trip = self.session.scalars(
+                select(TripHistory).where(
+                    TripHistory.booking_id == booking.id,
+                    TripHistory.driver_id == driver.id,
+                )
+            ).first()
+            if trip is not None:
+                trip.status = "completed"
+                trip.completed_at = now
+                if trip.total_fare is None:
+                    trip.total_fare = booking.estimated_fare
+                self.session.add(trip)
+
+            booking.status = "completed"
+            self.session.add(booking)
+
+            passenger = self.session.get(Passenger, booking.passenger_id)
+            if passenger is not None:
+                self.session.add(
+                    Notification(
+                        user_id=passenger.user_id,
+                        title="Ride completed",
+                        body=(
+                            f"Your pooled ride from {booking.pickup_label} to "
+                            f"{booking.dropoff_label} is complete. Thanks for sharing the trip!"
+                        ),
+                        status="unread",
+                    )
+                )
+
+        self.session.commit()
+        self.session.refresh(group)
+        return group

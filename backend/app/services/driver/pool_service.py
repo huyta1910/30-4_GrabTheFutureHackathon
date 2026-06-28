@@ -3,7 +3,13 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 
+from app.optimizer.backend_adapter import (
+    booking_has_coordinates,
+    optimize_fixed_booking_pool,
+)
 from app.repositories.driver.pool_repository import PoolRepository
+from app.repositories.matching import MatchingRepository
+from app.services.matching import MatchingService
 from app.schemas.driver.geo import GeoPoint
 from app.schemas.driver.pool import (
     PoolPassenger,
@@ -18,18 +24,24 @@ class PoolService:
     def __init__(self, pool_repo: PoolRepository) -> None:
         self._pools = pool_repo
 
-    def list_suggestions(self) -> list[PoolSuggestion]:
+    def list_suggestions(self, driver_id: UUID | None = None) -> list[PoolSuggestion]:
+        # Auto-run AI matching so freshly-requested rides surface as pools with
+        # no manual trigger — the driver's polling pool page shows them live.
+        MatchingService(MatchingRepository(self._pools.session)).run()
         groups = self._pools.list_pending()
-        return [self._to_suggestion(g) for g in groups]
+        driver_location = self._driver_location(driver_id)
+        return [self._to_suggestion(g, driver_location) for g in groups]
 
-    def get_suggestion(self, group_id: UUID) -> PoolSuggestion:
+    def get_suggestion(self, group_id: UUID, driver_id: UUID | None = None) -> PoolSuggestion:
         group = self._pools.get(group_id)
         if group is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Pool suggestion not found",
             )
-        return self._to_suggestion(group)
+        # Prefer the assigned driver's location, else the viewing driver's.
+        driver_location = self._driver_location(group.driver_id or driver_id)
+        return self._to_suggestion(group, driver_location)
 
     def respond(
         self, driver_id: UUID, group_id: UUID, payload: PoolRespondPayload
@@ -49,7 +61,7 @@ class PoolService:
         if payload.action == "decline":
             group.status = "declined"
             self._pools.save(group)
-            return self._to_suggestion(group)
+            return self._to_suggestion(group, self._driver_location(driver_id))
 
         driver = self._pools.get_driver(driver_id)
         if driver is None:
@@ -59,9 +71,37 @@ class PoolService:
             )
         members_with_bookings = self._pools.get_members_with_bookings(group.id)
         self._pools.confirm_assignment(group, driver, members_with_bookings)
-        return self._to_suggestion(group)
+        return self._to_suggestion(group, _driver_point(driver))
 
-    def _to_suggestion(self, group) -> PoolSuggestion:
+    def complete(self, driver_id: UUID, group_id: UUID) -> PoolSuggestion:
+        group = self._pools.get(group_id)
+        if group is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Pool suggestion not found",
+            )
+        if group.status != "active":
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Cannot complete a pool with status '{group.status}'",
+            )
+        driver = self._pools.get_driver(driver_id)
+        if driver is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Driver not found",
+            )
+        members_with_bookings = self._pools.get_members_with_bookings(group.id)
+        self._pools.complete_pool(group, driver, members_with_bookings)
+        return self._to_suggestion(group, _driver_point(driver))
+
+    def _driver_location(self, driver_id: UUID | None) -> GeoPoint | None:
+        if driver_id is None:
+            return None
+        driver = self._pools.get_driver(driver_id)
+        return _driver_point(driver) if driver is not None else None
+
+    def _to_suggestion(self, group, driver_location: GeoPoint | None = None) -> PoolSuggestion:
         members_with_bookings = self._pools.get_members_with_bookings(group.id)
         passengers: list[PoolPassenger] = []
         total_fare = Decimal(0)
@@ -96,19 +136,26 @@ class PoolService:
             if fare:
                 total_fare += fare
 
-        # Mock-AI route: driver starts at first pickup, picks up all riders, then
-        # drops them off in order — avoiding congestion (visual detour).
-        driver_start = pickups[0] if pickups else geocode(group.origin_area)
-        ordered_stops = pickups + dropoffs
+        # Route starts at the driver's real location when known, else the first
+        # pickup. Riders are then dropped off in AI-optimized order (Held-Karp).
+        driver_start = driver_location or (pickups[0] if pickups else geocode(group.origin_area))
+
+        dropoff_seq = _optimized_dropoff_sequence(members_with_bookings)
+        if dropoff_seq is None:
+            dropoff_seq = list(range(len(passengers)))
+
+        ordered_dropoffs = [
+            passengers[i].dropoff for i in dropoff_seq if passengers[i].dropoff is not None
+        ]
+        ordered_stops = pickups + ordered_dropoffs
         route = build_route(ordered_stops, avoid_congestion=True)
 
-        # Ordered navigation sequence: all pickups first, then all dropoffs.
-        # (The real AI router may return a TSP-optimized order; the schema and
-        # frontend already render whatever `sequence` order is provided.)
+        # Navigation sequence: all pickups first, then drop-offs in optimal order.
         ordered: list[tuple[str, PoolPassenger, GeoPoint | None]] = []
         for p in passengers:
             ordered.append(("pickup", p, p.pickup))
-        for p in passengers:
+        for i in dropoff_seq:
+            p = passengers[i]
             ordered.append(("dropoff", p, p.dropoff))
 
         stops: list[PoolStop] = []
@@ -161,3 +208,29 @@ def _booking_point(lat, lng) -> GeoPoint | None:
     if lat is None or lng is None:
         return None
     return GeoPoint(lat=float(lat), lng=float(lng))
+
+
+def _driver_point(driver) -> GeoPoint | None:
+    if driver is None:
+        return None
+    return _booking_point(driver.current_latitude, driver.current_longitude)
+
+
+def _optimized_dropoff_sequence(members_with_bookings) -> list[int] | None:
+    """Optimal drop-off order as passenger indices, via Held-Karp TSP.
+
+    Returns None when any booking lacks coordinates, so the caller falls back to
+    the input order.
+    """
+    bookings = [booking for _, booking in members_with_bookings]
+    if any(b is None for b in bookings):
+        return None
+    if not all(booking_has_coordinates(b) for b in bookings):
+        return None
+
+    plan = optimize_fixed_booking_pool(bookings)
+    if plan is None:
+        return None
+
+    index_by_id = {str(b.id): i for i, b in enumerate(bookings)}
+    return [index_by_id[uid] for uid in plan.dropoff_order]

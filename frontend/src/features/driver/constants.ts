@@ -10,6 +10,8 @@ export const DRIVER_API = {
     `/drivers/${driverId}/pool-suggestions/${groupId}`,
   poolRespond: (driverId: string, groupId: string) =>
     `/drivers/${driverId}/pool-suggestions/${groupId}/respond`,
+  poolComplete: (driverId: string, groupId: string) =>
+    `/drivers/${driverId}/pool-suggestions/${groupId}/complete`,
   notifications: (driverId: string) => `/drivers/${driverId}/notifications`,
   notificationRead: (driverId: string, notificationId: string) =>
     `/drivers/${driverId}/notifications/${notificationId}/read`,

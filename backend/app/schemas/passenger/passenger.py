@@ -71,6 +71,7 @@ class NotificationRead(BaseModel):
     title: str
     body: str
     status: str
+    category: str = "general"
     created_at: datetime
 
 

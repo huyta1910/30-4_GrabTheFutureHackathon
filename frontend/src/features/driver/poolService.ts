@@ -117,3 +117,11 @@ export async function respondToPool(
   const { data } = await apiClient.patch(DRIVER_API.poolRespond(driverId, groupId), { action });
   return mapSuggestion(data.data as RawPoolSuggestion);
 }
+
+export async function completePool(
+  driverId: string,
+  groupId: string,
+): Promise<PoolSuggestion> {
+  const { data } = await apiClient.post(DRIVER_API.poolComplete(driverId, groupId));
+  return mapSuggestion(data.data as RawPoolSuggestion);
+}

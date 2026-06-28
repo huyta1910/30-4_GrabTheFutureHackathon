@@ -7,6 +7,7 @@ import { RideHistoryList } from "@/components/passenger/RideHistoryList";
 import { RideRequestForm } from "@/components/passenger/RideRequestForm";
 import { RideStatusPanel } from "@/components/passenger/RideStatusPanel";
 import { StatusPill } from "@/components/passenger/StatusPill";
+import { WeatherAlertBanner } from "@/components/passenger/WeatherAlertBanner";
 import { usePassengerDashboard } from "@/features/passenger/hooks";
 
 interface PassengerDashboardProps {
@@ -16,8 +17,15 @@ interface PassengerDashboardProps {
 export function PassengerDashboard({ passengerId }: PassengerDashboardProps) {
   const dashboard = usePassengerDashboard(passengerId);
 
+  const scrollToRideForm = () => {
+    document
+      .getElementById("ride-request-form")
+      ?.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+
   return (
     <div className="grid gap-6">
+      <WeatherAlertBanner passengerId={passengerId} onBookNow={scrollToRideForm} />
       <section className="grid gap-4 md:grid-cols-3">
         {dashboard.isLoading ? (
           <>
@@ -86,7 +94,12 @@ export function PassengerDashboard({ passengerId }: PassengerDashboardProps) {
       </section>
       <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div className="grid gap-6">
-          <RideRequestForm passengerId={passengerId} disabled={Boolean(dashboard.data?.current_ride)} />
+          <div id="ride-request-form">
+            <RideRequestForm
+              passengerId={passengerId}
+              disabled={Boolean(dashboard.data?.current_ride)}
+            />
+          </div>
           <RideStatusPanel passengerId={passengerId} />
           <RideHistoryList passengerId={passengerId} />
         </div>

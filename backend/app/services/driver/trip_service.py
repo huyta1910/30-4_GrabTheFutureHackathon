@@ -112,6 +112,22 @@ class TripService:
         if booking is not None:
             booking.status = _BOOKING_STATUS_FOR_TRIP.get(target, booking.status)
 
+        # Notify the passenger when the ride finishes or is cancelled.
+        if booking is not None and target == DriverTripStatus.completed.value:
+            self._trips.notify_passenger(
+                booking,
+                "Ride completed",
+                f"Your pooled ride from {booking.pickup_label} to "
+                f"{booking.dropoff_label} is complete. Thanks for sharing the trip!",
+            )
+        elif booking is not None and target == DriverTripStatus.cancelled.value:
+            self._trips.notify_passenger(
+                booking,
+                "Ride cancelled",
+                f"Your ride from {booking.pickup_label} to {booking.dropoff_label} "
+                "was cancelled. Please request a new ride.",
+            )
+
         saved = self._trips.save(trip, booking)
         return self._to_detail(saved, booking)
 

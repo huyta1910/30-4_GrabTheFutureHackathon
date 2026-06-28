@@ -4,7 +4,9 @@ from fastapi import HTTPException, status
 
 from app.models.booking import Booking
 from app.models.passenger import Passenger
+from app.repositories.matching import MatchingRepository
 from app.repositories.passenger import PassengerRepository
+from app.services.matching import MatchingService
 from app.schemas.passenger import (
     NotificationRead,
     PassengerDashboardRead,
@@ -58,14 +60,23 @@ class PassengerService:
             dropoff_latitude=payload.dropoff_latitude,
             dropoff_longitude=payload.dropoff_longitude,
         )
+
+        # AI pooling: regroup all waiting requests (incl. this one) into
+        # optimized shared pools that drivers can accept.
+        MatchingService(MatchingRepository(self.repository.session)).run()
+
         return RideRequestRead.model_validate(booking)
 
     def get_ride_status(self, passenger_id: UUID) -> RideStatusRead:
         self._get_passenger(passenger_id)
-        current_ride = self.repository.get_current_ride(passenger_id)
+        # Show the active ride, or fall back to the most recent one so a just
+        # finished ride still surfaces its "completed" status to the passenger.
+        ride = self.repository.get_current_ride(passenger_id) or self.repository.get_latest_ride(
+            passenger_id
+        )
         return RideStatusRead(
-            current_ride=self._ride_to_schema(current_ride),
-            next_step=self._next_step_for(current_ride),
+            current_ride=self._ride_to_schema(ride),
+            next_step=self._next_step_for(ride),
         )
 
     def get_ride_history(self, passenger_id: UUID, limit: int = 10) -> list[RideHistoryRead]:
@@ -129,7 +140,10 @@ class PassengerService:
         next_steps = {
             "requested": "Matching your request with nearby pooled routes.",
             "matching": "Looking for compatible co-passengers and drivers.",
+            "matched": "Found a shared pool — waiting for a driver to accept.",
             "assigned": "A driver has been assigned and is heading to pickup.",
             "in_progress": "Ride is in progress.",
+            "completed": "Your ride is complete. Thanks for pooling!",
+            "cancelled": "This ride was cancelled. Request a new ride to continue.",
         }
         return next_steps.get(ride.status, "Ride status is being updated.")

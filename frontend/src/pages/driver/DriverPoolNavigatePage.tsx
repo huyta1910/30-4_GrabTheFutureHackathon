@@ -6,6 +6,7 @@ import { DriverErrorState } from "@/components/driver/DriverErrorState";
 import { PoolNavigation } from "@/components/driver/pool/PoolNavigation";
 import { TripListSkeleton } from "@/components/driver/trip/TripListSkeleton";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { useCompletePool } from "@/features/driver/hooks/useCompletePool";
 import { usePoolSuggestion } from "@/features/driver/hooks/usePoolSuggestion";
 
 export function DriverPoolNavigatePage() {
@@ -16,12 +17,18 @@ export function DriverPoolNavigatePage() {
   const driverId = searchParams.get("driverId") ?? session?.user.id;
 
   const { data, isPending, isError, error, refetch } = usePoolSuggestion(driverId, groupId);
+  const completeMutation = useCompletePool(driverId ?? "");
 
   const backToPool = () => {
     const suffix = searchParams.get("driverId")
       ? `?driverId=${searchParams.get("driverId")}`
       : "";
     navigate(`/dashboard/driver/pool${suffix}`);
+  };
+
+  const handleComplete = () => {
+    if (!groupId) return;
+    completeMutation.mutate(groupId, { onSuccess: backToPool });
   };
 
   return (
@@ -66,7 +73,11 @@ export function DriverPoolNavigatePage() {
             onRetry={() => refetch()}
           />
         ) : (
-          <PoolNavigation suggestion={data} onComplete={backToPool} />
+          <PoolNavigation
+            suggestion={data}
+            onComplete={handleComplete}
+            isCompleting={completeMutation.isPending}
+          />
         )}
       </div>
     </PageTransition>

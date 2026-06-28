@@ -7,6 +7,8 @@ from sqlalchemy import Date as DateType
 from sqlalchemy.orm import Session
 
 from app.models.booking import Booking
+from app.models.notification import Notification
+from app.models.passenger import Passenger
 from app.models.trip_history import TripHistory
 
 ACTIVE_TRIP_STATUSES = ("assigned", "en_route", "in_progress")
@@ -124,6 +126,15 @@ class DriverTripRepository:
         self.session.commit()
         self.session.refresh(trip)
         return trip
+
+    def notify_passenger(self, booking: Booking, title: str, body: str) -> None:
+        """Queue a notification for the booking's passenger (committed by save)."""
+        passenger = self.session.get(Passenger, booking.passenger_id)
+        if passenger is None:
+            return
+        self.session.add(
+            Notification(user_id=passenger.user_id, title=title, body=body, status="unread")
+        )
 
     # --- Earnings ---
 

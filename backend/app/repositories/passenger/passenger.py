@@ -8,8 +8,6 @@ from sqlalchemy.orm import Session
 from app.models.booking import Booking
 from app.models.notification import Notification
 from app.models.passenger import Passenger
-from app.models.ride_pool_group import RidePoolGroup
-from app.models.ride_pool_member import RidePoolMember
 from app.models.trip_history import TripHistory
 from app.repositories.base import BaseRepository
 
@@ -52,26 +50,10 @@ class PassengerRepository(BaseRepository[Passenger]):
             estimated_fare=None,
         )
         self.session.add(booking)
-        self.session.flush()
 
-        # Mock-AI matching glue: every new request enters the pool queue as a
-        # pending group so drivers can see and accept it. The real AI matcher
-        # will replace this by grouping compatible bookings into shared pools.
-        group = RidePoolGroup(
-            status="pending",
-            origin_area=pickup_label,
-            destination_area=dropoff_label,
-        )
-        self.session.add(group)
-        self.session.flush()
-        self.session.add(
-            RidePoolMember(
-                ride_pool_group_id=group.id,
-                booking_id=booking.id,
-                status="pending",
-            )
-        )
-
+        # The booking enters the matching queue (status "matching"). The AI
+        # matcher (app.services.matching) groups compatible requests into shared
+        # pools afterward — it is triggered from the passenger service.
         self.session.add(
             Notification(
                 user_id=user_id,
@@ -88,8 +70,17 @@ class PassengerRepository(BaseRepository[Passenger]):
         self.session.refresh(booking)
         return booking
 
+    def get_latest_ride(self, passenger_id: UUID) -> Booking | None:
+        statement = (
+            select(Booking)
+            .where(Booking.passenger_id == passenger_id)
+            .order_by(Booking.requested_at.desc())
+            .limit(1)
+        )
+        return self.session.scalars(statement).first()
+
     def get_current_ride(self, passenger_id: UUID) -> Booking | None:
-        active_statuses = ("requested", "matching", "assigned", "in_progress")
+        active_statuses = ("requested", "matching", "matched", "assigned", "in_progress")
         statement = (
             select(Booking)
             .where(Booking.passenger_id == passenger_id, Booking.status.in_(active_statuses))
