@@ -18,7 +18,16 @@ INSERT INTO users (id, email, full_name, role, status)
 VALUES
   ('00000000-0000-0000-0000-000000000101', 'passenger@example.com', 'Sample Passenger', 'passenger', 'active'),
   ('00000000-0000-0000-0000-000000000103', 'passenger2@example.com', 'Sample Passenger Two', 'passenger', 'active'),
-  ('00000000-0000-0000-0000-000000000102', 'driver@example.com', 'Sample Driver', 'driver', 'active')
+  ('00000000-0000-0000-0000-000000000102', 'driver@example.com', 'Sample Driver', 'driver', 'active'),
+  ('00000000-0000-0000-0000-000000000104', 'driver02@example.com', 'Demo Driver 02', 'driver', 'active'),
+  ('00000000-0000-0000-0000-000000000105', 'driver03@example.com', 'Demo Driver 03', 'driver', 'active'),
+  ('00000000-0000-0000-0000-000000000106', 'driver04@example.com', 'Demo Driver 04', 'driver', 'active'),
+  ('00000000-0000-0000-0000-000000000107', 'driver05@example.com', 'Demo Driver 05', 'driver', 'active'),
+  ('00000000-0000-0000-0000-000000000108', 'driver06@example.com', 'Demo Driver 06', 'driver', 'active'),
+  ('00000000-0000-0000-0000-000000000109', 'driver07@example.com', 'Demo Driver 07', 'driver', 'active'),
+  ('00000000-0000-0000-0000-000000000110', 'driver08@example.com', 'Demo Driver 08', 'driver', 'active'),
+  ('00000000-0000-0000-0000-000000000111', 'driver09@example.com', 'Demo Driver 09', 'driver', 'active'),
+  ('00000000-0000-0000-0000-000000000112', 'driver10@example.com', 'Demo Driver 10', 'driver', 'active')
 ON CONFLICT (email) DO NOTHING;
 
 INSERT INTO passengers (id, user_id, display_name)
@@ -27,10 +36,31 @@ VALUES
   ('00000000-0000-0000-0000-000000000202', '00000000-0000-0000-0000-000000000103', 'Sample Passenger Two')
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO drivers (id, user_id, license_number, vehicle_label, availability_status)
+INSERT INTO drivers (
+  id,
+  user_id,
+  license_number,
+  vehicle_label,
+  availability_status,
+  current_latitude,
+  current_longitude
+)
 VALUES
-  ('00000000-0000-0000-0000-000000000301', '00000000-0000-0000-0000-000000000102', 'SAMPLE-LICENSE-001', 'Toyota Vios - 51A-123.45', 'active')
-ON CONFLICT (license_number) DO NOTHING;
+  ('00000000-0000-0000-0000-000000000301', '00000000-0000-0000-0000-000000000102', 'SAMPLE-LICENSE-001', 'Toyota Vios - 51A-123.45', 'active', 10.776889, 106.700806),
+  ('00000000-0000-0000-0000-000000000302', '00000000-0000-0000-0000-000000000104', 'SAMPLE-LICENSE-002', 'Hyundai Accent - 51F-222.02', 'active', 10.781761, 106.701623),
+  ('00000000-0000-0000-0000-000000000303', '00000000-0000-0000-0000-000000000105', 'SAMPLE-LICENSE-003', 'Kia Seltos - 51G-333.03', 'active', 10.790457, 106.718821),
+  ('00000000-0000-0000-0000-000000000304', '00000000-0000-0000-0000-000000000106', 'SAMPLE-LICENSE-004', 'Toyota Innova - 51H-444.04', 'active', 10.762622, 106.682201),
+  ('00000000-0000-0000-0000-000000000305', '00000000-0000-0000-0000-000000000107', 'SAMPLE-LICENSE-005', 'Honda City - 51K-555.05', 'active', 10.795000, 106.705000),
+  ('00000000-0000-0000-0000-000000000306', '00000000-0000-0000-0000-000000000108', 'SAMPLE-LICENSE-006', 'Mazda 3 - 51L-666.06', 'inactive', 10.798500, 106.688700),
+  ('00000000-0000-0000-0000-000000000307', '00000000-0000-0000-0000-000000000109', 'SAMPLE-LICENSE-007', 'VinFast VF e34 - 51M-777.07', 'active', 10.786900, 106.695800),
+  ('00000000-0000-0000-0000-000000000308', '00000000-0000-0000-0000-000000000110', 'SAMPLE-LICENSE-008', 'Mitsubishi Xpander - 51N-888.08', 'active', 10.776300, 106.703900),
+  ('00000000-0000-0000-0000-000000000309', '00000000-0000-0000-0000-000000000111', 'SAMPLE-LICENSE-009', 'Toyota Corolla Cross - 51P-999.09', 'inactive', 10.804200, 106.721800),
+  ('00000000-0000-0000-0000-000000000310', '00000000-0000-0000-0000-000000000112', 'SAMPLE-LICENSE-010', 'Hyundai Tucson - 51R-101.10', 'active', 10.735900, 106.721600)
+ON CONFLICT (license_number) DO UPDATE SET
+  vehicle_label = EXCLUDED.vehicle_label,
+  availability_status = EXCLUDED.availability_status,
+  current_latitude = EXCLUDED.current_latitude,
+  current_longitude = EXCLUDED.current_longitude;
 
 -- Pool groups: ...401 leftover draft, ...402 pending (waiting for the driver to accept).
 INSERT INTO ride_pool_groups (id, status, origin_area, destination_area, driver_id)
