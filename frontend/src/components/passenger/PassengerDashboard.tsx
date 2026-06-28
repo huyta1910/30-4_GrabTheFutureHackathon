@@ -8,7 +8,9 @@ import { RideHistoryList } from "@/components/passenger/RideHistoryList";
 import { RideRequestForm } from "@/components/passenger/RideRequestForm";
 import { RideStatusPanel } from "@/components/passenger/RideStatusPanel";
 import { StatusPill } from "@/components/passenger/StatusPill";
+import { WeatherAlertModal } from "@/components/passenger/WeatherAlertModal";
 import { usePassengerDashboard } from "@/features/passenger/hooks";
+import { isPassengerWeatherAlertNotification } from "@/features/passenger/weatherAlerts";
 
 interface PassengerDashboardProps {
   passengerId: string;
@@ -16,10 +18,16 @@ interface PassengerDashboardProps {
 
 export function PassengerDashboard({ passengerId }: PassengerDashboardProps) {
   const dashboard = usePassengerDashboard(passengerId);
+  const dashboardNotifications = dashboard.data?.notifications ?? [];
+  const unreadStandardNotificationCount = dashboardNotifications.filter(
+    (notification) =>
+      notification.status !== "read" && !isPassengerWeatherAlertNotification(notification),
+  ).length;
 
   return (
     <div className="grid gap-6">
       <RideCompletedModal passengerId={passengerId} />
+      <WeatherAlertModal passengerId={passengerId} notifications={dashboardNotifications} />
       <section className="grid gap-4 md:grid-cols-3">
         {dashboard.isLoading ? (
           <>
@@ -74,13 +82,7 @@ export function PassengerDashboard({ passengerId }: PassengerDashboardProps) {
                 <CardTitle className="text-base">Unread alerts</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-semibold">
-                  {
-                    dashboard.data.notifications.filter(
-                      (notification) => notification.status !== "read",
-                    ).length
-                  }
-                </p>
+                <p className="text-3xl font-semibold">{unreadStandardNotificationCount}</p>
               </CardContent>
             </Card>
           </>
@@ -88,7 +90,12 @@ export function PassengerDashboard({ passengerId }: PassengerDashboardProps) {
       </section>
       <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div className="grid gap-6">
-          <RideRequestForm passengerId={passengerId} disabled={Boolean(dashboard.data?.current_ride)} />
+          <div id="passenger-ride-request">
+            <RideRequestForm
+              passengerId={passengerId}
+              disabled={Boolean(dashboard.data?.current_ride)}
+            />
+          </div>
           <RideStatusPanel passengerId={passengerId} />
           <RideHistoryList passengerId={passengerId} />
         </div>

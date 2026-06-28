@@ -167,3 +167,30 @@ INSERT INTO weather_events (id, event_type, severity, location_label, observed_a
 VALUES
   ('00000000-0000-0000-0000-000000000501', 'rain', 'moderate', 'Phường Bình Thạnh, Thành phố Hồ Chí Minh', NOW())
 ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO weather_alerts (
+  id,
+  city,
+  event_type,
+  severity,
+  title,
+  message,
+  starts_at,
+  ends_at,
+  source,
+  is_active
+)
+VALUES
+  (
+    '00000000-0000-0000-0000-000000000502',
+    'Ho Chi Minh City',
+    'rain',
+    'heavy',
+    'Heavy rain expected in Ho Chi Minh City',
+    'Heavy rain may affect rides in Ho Chi Minh City within the next hour. Consider booking earlier and choosing a sheltered pickup point.',
+    NOW() - INTERVAL '10 minutes',
+    NOW() + INTERVAL '1 hour',
+    'mock',
+    TRUE
+  )
+ON CONFLICT (id) DO NOTHING;

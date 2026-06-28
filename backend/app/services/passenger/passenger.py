@@ -14,14 +14,21 @@ from app.schemas.passenger import (
     RideRequestRead,
     RideStatusRead,
 )
+from app.services.weather_alert import WeatherAlertService
 
 
 class PassengerService:
-    def __init__(self, repository: PassengerRepository) -> None:
+    def __init__(
+        self,
+        repository: PassengerRepository,
+        weather_alert_service: WeatherAlertService,
+    ) -> None:
         self.repository = repository
+        self.weather_alert_service = weather_alert_service
 
     def get_dashboard(self, passenger_id: UUID) -> PassengerDashboardRead:
         passenger = self._get_passenger(passenger_id)
+        self.weather_alert_service.ensure_notification_for_user(passenger.user_id)
         return PassengerDashboardRead(
             profile=PassengerProfileRead.model_validate(passenger),
             current_ride=self._ride_to_schema(self.repository.get_current_ride(passenger_id)),
@@ -108,6 +115,7 @@ class PassengerService:
 
     def get_notifications(self, passenger_id: UUID) -> list[NotificationRead]:
         passenger = self._get_passenger(passenger_id)
+        self.weather_alert_service.ensure_notification_for_user(passenger.user_id)
         return [
             NotificationRead.model_validate(notification)
             for notification in self.repository.list_notifications(passenger.user_id)

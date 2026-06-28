@@ -6,6 +6,7 @@ import {
   useMarkPassengerNotificationRead,
   usePassengerNotifications,
 } from "@/features/passenger/hooks";
+import { isPassengerWeatherAlertNotification } from "@/features/passenger/weatherAlerts";
 import { StatusPill } from "@/components/passenger/StatusPill";
 
 interface NotificationsPanelProps {
@@ -15,6 +16,11 @@ interface NotificationsPanelProps {
 export function NotificationsPanel({ passengerId }: NotificationsPanelProps) {
   const notifications = usePassengerNotifications(passengerId);
   const markRead = useMarkPassengerNotificationRead(passengerId);
+  const visibleNotifications =
+    notifications.data?.filter(
+      (notification) =>
+        notification.status === "read" || !isPassengerWeatherAlertNotification(notification),
+    ) ?? [];
 
   return (
     <Card>
@@ -34,10 +40,10 @@ export function NotificationsPanel({ passengerId }: NotificationsPanelProps) {
         {notifications.isError ? (
           <p className="text-sm text-destructive">Notifications could not be loaded.</p>
         ) : null}
-        {notifications.data?.length === 0 ? (
+        {notifications.data && visibleNotifications.length === 0 ? (
           <p className="text-sm text-muted-foreground">No passenger notifications yet.</p>
         ) : null}
-        {notifications.data?.map((notification) => (
+        {visibleNotifications.map((notification) => (
           <div key={notification.id} className="grid gap-2 rounded-md border p-3">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
