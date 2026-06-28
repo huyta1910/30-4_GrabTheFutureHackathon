@@ -138,7 +138,7 @@ class DriverTripRepository:
         member_status: str,
         group_status: str,
         completed_at: datetime | None = None,
-    ) -> None:
+    ) -> list[Booking]:
         group_statement = (
             select(RidePoolGroup)
             .join(RidePoolMember, RidePoolMember.ride_pool_group_id == RidePoolGroup.id)
@@ -146,8 +146,9 @@ class DriverTripRepository:
         )
         group = self.session.scalars(group_statement).first()
         if group is None:
-            return
+            return []
 
+        affected_bookings: list[Booking] = []
         member_statement = (
             select(RidePoolMember, Booking, TripHistory)
             .join(Booking, Booking.id == RidePoolMember.booking_id)
@@ -163,15 +164,17 @@ class DriverTripRepository:
             trip.status = trip_status
             if completed_at is not None and trip.completed_at is None:
                 trip.completed_at = completed_at
-            if trip_status == COMPLETED_TRIP_STATUS and trip.total_fare is None:
+            if trip_status in {COMPLETED_TRIP_STATUS, "cancelled"} and trip.total_fare is None:
                 trip.total_fare = booking.estimated_fare
 
             self.session.add(member)
             self.session.add(booking)
             self.session.add(trip)
+            affected_bookings.append(booking)
 
         group.status = group_status
         self.session.add(group)
+        return affected_bookings
 
     def notify_passenger(self, booking: Booking, title: str, body: str) -> None:
         """Queue a notification for the booking's passenger (committed by save)."""

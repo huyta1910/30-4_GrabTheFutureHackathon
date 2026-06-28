@@ -7,5 +7,7 @@ export function useDriverDashboard(driverId: string | undefined) {
     queryKey: driverQueryKeys.dashboard(driverId ?? "unknown"),
     queryFn: () => getDriverDashboard(driverId as string),
     enabled: Boolean(driverId),
+    refetchInterval: 5_000,
+    refetchIntervalInBackground: false,
   });
 }

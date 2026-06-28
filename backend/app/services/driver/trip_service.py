@@ -104,17 +104,18 @@ class TripService:
 
         trip.status = target
         completed_at = None
-        if target == DriverTripStatus.completed.value:
+        if target in {DriverTripStatus.completed.value, DriverTripStatus.cancelled.value}:
             completed_at = datetime.now(timezone.utc)
             trip.completed_at = completed_at
             if trip.total_fare is None and booking is not None:
                 trip.total_fare = booking.estimated_fare
 
         # Mirror the lifecycle onto the booking so the passenger sees progress.
+        affected_bookings: list[Booking] = []
         if booking is not None:
             booking.status = _BOOKING_STATUS_FOR_TRIP.get(target, booking.status)
             if target == DriverTripStatus.completed.value:
-                self._trips.update_pool_lifecycle_for_booking(
+                affected_bookings = self._trips.update_pool_lifecycle_for_booking(
                     driver_id=driver_id,
                     booking_id=booking.id,
                     trip_status=target,
@@ -124,30 +125,34 @@ class TripService:
                     completed_at=completed_at,
                 )
             elif target == DriverTripStatus.cancelled.value:
-                self._trips.update_pool_lifecycle_for_booking(
+                affected_bookings = self._trips.update_pool_lifecycle_for_booking(
                     driver_id=driver_id,
                     booking_id=booking.id,
                     trip_status=target,
                     booking_status="cancelled",
                     member_status="cancelled",
                     group_status="cancelled",
+                    completed_at=completed_at,
                 )
+            elif booking not in affected_bookings:
+                affected_bookings = [booking]
 
         # Notify the passenger when the ride finishes or is cancelled.
-        if booking is not None and target == DriverTripStatus.completed.value:
-            self._trips.notify_passenger(
-                booking,
-                "Ride completed",
-                f"Your pooled ride from {booking.pickup_label} to "
-                f"{booking.dropoff_label} is complete. Thanks for sharing the trip!",
-            )
-        elif booking is not None and target == DriverTripStatus.cancelled.value:
-            self._trips.notify_passenger(
-                booking,
-                "Ride cancelled",
-                f"Your ride from {booking.pickup_label} to {booking.dropoff_label} "
-                "was cancelled. Please request a new ride.",
-            )
+        for affected_booking in affected_bookings:
+            if target == DriverTripStatus.completed.value:
+                self._trips.notify_passenger(
+                    affected_booking,
+                    "Ride completed",
+                    f"Your pooled ride from {affected_booking.pickup_label} to "
+                    f"{affected_booking.dropoff_label} is complete. Thanks for sharing the trip!",
+                )
+            elif target == DriverTripStatus.cancelled.value:
+                self._trips.notify_passenger(
+                    affected_booking,
+                    "Ride cancelled",
+                    f"Your ride from {affected_booking.pickup_label} to "
+                    f"{affected_booking.dropoff_label} was cancelled. Please request a new ride.",
+                )
 
         saved = self._trips.save(trip, booking)
         return self._to_detail(saved, booking)

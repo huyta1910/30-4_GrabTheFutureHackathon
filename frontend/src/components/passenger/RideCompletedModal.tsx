@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, XCircle } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
@@ -9,6 +9,10 @@ interface RideCompletedModalProps {
   passengerId: string;
 }
 
+type TerminalRideStatus = "completed" | "cancelled";
+
+const ACTIVE_RIDE_STATUSES = new Set(["requested", "matching", "matched", "assigned", "in_progress"]);
+
 export function RideCompletedModal({ passengerId }: RideCompletedModalProps) {
   const queryClient = useQueryClient();
   const rideStatus = useRideStatus(passengerId);
@@ -17,13 +21,14 @@ export function RideCompletedModal({ passengerId }: RideCompletedModalProps) {
   const refetchRideHistory = rideHistory.refetch;
   const refetchDashboard = dashboard.refetch;
   const previousRideIdRef = useRef<string | null>(null);
-  const shownCompletedBookingRef = useRef<string | null>(null);
+  const shownTerminalBookingRef = useRef<string | null>(null);
+  const [terminalStatus, setTerminalStatus] = useState<TerminalRideStatus>("completed");
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     const currentRide = rideStatus.data?.current_ride ?? null;
 
-    if (currentRide) {
+    if (currentRide && ACTIVE_RIDE_STATUSES.has(currentRide.status)) {
       previousRideIdRef.current = currentRide.id;
       return;
     }
@@ -37,17 +42,20 @@ export function RideCompletedModal({ passengerId }: RideCompletedModalProps) {
 
   useEffect(() => {
     const previousRideId = previousRideIdRef.current;
-    const latestCompletedRide = rideHistory.data?.find(
-      (ride) => ride.booking_id === previousRideId && ride.status === "completed",
+    const latestTerminalRide = rideHistory.data?.find(
+      (ride) =>
+        ride.booking_id === previousRideId &&
+        (ride.status === "completed" || ride.status === "cancelled"),
     );
 
     if (
       previousRideId &&
-      latestCompletedRide &&
-      shownCompletedBookingRef.current !== latestCompletedRide.booking_id
+      latestTerminalRide &&
+      shownTerminalBookingRef.current !== latestTerminalRide.booking_id
     ) {
-      shownCompletedBookingRef.current = latestCompletedRide.booking_id;
+      shownTerminalBookingRef.current = latestTerminalRide.booking_id;
       previousRideIdRef.current = null;
+      setTerminalStatus(latestTerminalRide.status as TerminalRideStatus);
       setIsOpen(true);
     }
   }, [rideHistory.data]);
@@ -72,13 +80,31 @@ export function RideCompletedModal({ passengerId }: RideCompletedModalProps) {
         }
         setIsOpen(open);
       }}
-      title="Ride Completed"
-      description="Your trip has been completed. You can book a new ride now."
+      title={terminalStatus === "completed" ? "Ride Completed" : "Ride Cancelled"}
+      description={
+        terminalStatus === "completed"
+          ? "Your trip has been completed. You can book a new ride now."
+          : "Your driver cancelled this trip. You can book a new ride now."
+      }
     >
       <div className="grid gap-4">
-        <div className="flex items-center gap-3 rounded-md border bg-emerald-50 p-3 text-emerald-700">
-          <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
-          <p className="text-sm font-medium">Thanks for riding with Adaptive AI Ride Pooling.</p>
+        <div
+          className={
+            terminalStatus === "completed"
+              ? "flex items-center gap-3 rounded-md border bg-emerald-50 p-3 text-emerald-700"
+              : "flex items-center gap-3 rounded-md border bg-amber-50 p-3 text-amber-700"
+          }
+        >
+          {terminalStatus === "completed" ? (
+            <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
+          ) : (
+            <XCircle className="h-5 w-5" aria-hidden="true" />
+          )}
+          <p className="text-sm font-medium">
+            {terminalStatus === "completed"
+              ? "Thanks for riding with Adaptive AI Ride Pooling."
+              : "The request form has been refreshed for your next booking."}
+          </p>
         </div>
         <Button type="button" onClick={() => void handleClose()}>
           Book another ride
