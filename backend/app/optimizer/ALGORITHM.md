@@ -93,6 +93,13 @@ Partition `N` passengers into `K` pools, where:
 K = min(pool_count, N)
 ```
 
+The outer DP fills exactly `K` non-empty pools (the inner loop only
+iterates non-empty submasks, so there is no carry-empty-pool transition).
+This is always feasible because the `min(pool_count, N)` clamp guarantees
+`K <= N`, and any `N` items can be split into exactly `K` non-empty groups.
+Do not drop the clamp to `pool_count`: with `pool_count > N`, the DP could
+never reach `dp[K][all]` and pooling would fail.
+
 Each pool contains at most `max_pool_size` passengers. The optimizer minimizes:
 
 ```text

@@ -251,7 +251,7 @@ def optimize_passenger_pools(
     if dp[target_pool_count][all_users_mask] == INF:
         raise ValueError("No feasible passenger pooling assignment.")
 
-    pools_reversed: list[PoolPlan] = []
+    pool_masks_reversed: list[int] = []
     user_mask = all_users_mask
 
     for used_pools in range(target_pool_count, 0, -1):
@@ -259,8 +259,15 @@ def optimize_passenger_pools(
         if pool_mask < 0:
             raise RuntimeError("Passenger pool reconstruction failed.")
 
+        pool_masks_reversed.append(pool_mask)
+        user_mask ^= pool_mask
+
+    pools_reversed: list[PoolPlan] = []
+    pool_count_total = len(pool_masks_reversed)
+
+    for offset, pool_mask in enumerate(pool_masks_reversed):
         member_indices = _indices_from_mask(pool_mask, user_count)
-        pool_id = f"pool-{used_pools}"
+        pool_id = f"pool-{pool_count_total - offset}"
         pools_reversed.append(
             build_pool_plan(
                 pool_id=pool_id,
@@ -271,7 +278,6 @@ def optimize_passenger_pools(
                 cost=pool_costs[pool_mask],
             )
         )
-        user_mask ^= pool_mask
 
     pools = tuple(reversed(pools_reversed))
     return PoolOptimizationResult(pools=pools, total_cost=dp[target_pool_count][all_users_mask])
