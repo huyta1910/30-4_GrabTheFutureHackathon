@@ -3,7 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MapLegend } from "@/components/driver/map/MapLegend";
 import { RouteMap, type MapMarker } from "@/components/driver/map/RouteMap";
-import { formatDriverCurrency, formatDriverDateTime } from "@/features/driver/format";
+import {
+  formatDistance,
+  formatDriverCurrency,
+  formatDriverDateTime,
+  formatDuration,
+} from "@/features/driver/format";
 import type { PoolSuggestion } from "@/features/driver/types";
 
 interface PoolSuggestionCardProps {
@@ -103,6 +108,27 @@ export function PoolSuggestionCard({
                 { color: "#ef4444", label: "Vùng ngập/kẹt" },
               ]}
             />
+          </div>
+        ) : null}
+
+        {suggestion.distanceM !== null || suggestion.durationS !== null ? (
+          <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted-foreground">
+            {suggestion.distanceM !== null ? (
+              <span>
+                Quãng đường:{" "}
+                <span className="font-medium text-foreground">
+                  {formatDistance(suggestion.distanceM)}
+                </span>
+              </span>
+            ) : null}
+            {suggestion.durationS !== null ? (
+              <span>
+                Thời gian:{" "}
+                <span className="font-medium text-foreground">
+                  {formatDuration(suggestion.durationS)}
+                </span>
+              </span>
+            ) : null}
           </div>
         ) : null}
 

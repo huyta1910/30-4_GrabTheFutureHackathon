@@ -42,6 +42,10 @@ class PoolSuggestion(BaseModel):
     created_at: datetime
     driver_start: GeoPoint | None = None
     route: list[GeoPoint] = []
+    # Real road distance/duration of the full route (VietMap Route API).
+    # None when routing falls back to the straight-line mock.
+    distance_m: float | None = None
+    duration_s: float | None = None
     congestion_zones: list[CongestionZone] = []
     stops: list[PoolStop] = []
 

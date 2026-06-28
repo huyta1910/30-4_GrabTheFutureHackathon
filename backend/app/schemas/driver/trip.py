@@ -37,6 +37,10 @@ class DriverTripDetail(DriverTripRead):
     dropoff: GeoPoint | None = None
     driver_position: GeoPoint | None = None
     route: list[GeoPoint] = []
+    # Real road distance/duration of the drawn route (VietMap Route API).
+    # None when routing falls back to the straight-line mock.
+    distance_m: float | None = None
+    duration_s: float | None = None
     congestion_zones: list[CongestionZone] = []
 
 

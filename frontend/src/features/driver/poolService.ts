@@ -48,6 +48,8 @@ interface RawPoolSuggestion {
   created_at: string;
   driver_start: RawGeo | null;
   route: RawGeo[];
+  distance_m: number | null;
+  duration_s: number | null;
   congestion_zones: {
     lat: number;
     lng: number;
@@ -91,6 +93,8 @@ function mapSuggestion(raw: RawPoolSuggestion): PoolSuggestion {
     createdAt: raw.created_at,
     driverStart: mapGeoPoint(raw.driver_start),
     route: mapGeoPoints(raw.route),
+    distanceM: raw.distance_m ?? null,
+    durationS: raw.duration_s ?? null,
     congestionZones: mapCongestionZones(raw.congestion_zones),
     stops: (raw.stops ?? []).map(mapStop),
   };

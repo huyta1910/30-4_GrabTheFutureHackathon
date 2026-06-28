@@ -34,6 +34,9 @@ export interface DriverTripDetail extends DriverTrip {
   dropoff: GeoPoint | null;
   driverPosition: GeoPoint | null;
   route: GeoPoint[];
+  /** Real road distance/duration of the route. null when routing fell back to the mock. */
+  distanceM: number | null;
+  durationS: number | null;
   congestionZones: CongestionZone[];
 }
 
@@ -130,6 +133,9 @@ export interface PoolSuggestion {
   createdAt: string;
   driverStart: GeoPoint | null;
   route: GeoPoint[];
+  /** Real road distance/duration of the route. null when routing fell back to the mock. */
+  distanceM: number | null;
+  durationS: number | null;
   congestionZones: CongestionZone[];
   stops: PoolStop[];
 }

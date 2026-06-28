@@ -18,6 +18,7 @@ from app.schemas.driver.pool import (
     PoolSuggestion,
 )
 from app.services.driver.geo_mock import build_route, demo_congestion_zones, geocode
+from app.services.driver.routing import road_route
 
 
 class PoolService:
@@ -155,7 +156,7 @@ class PoolService:
             passengers[i].dropoff for i in dropoff_seq if passengers[i].dropoff is not None
         ]
         ordered_stops = pickups + ordered_dropoffs
-        route = build_route(ordered_stops, avoid_congestion=True)
+        routed = road_route(ordered_stops, avoid_congestion=True)
 
         # Navigation sequence: all pickups first, then drop-offs in optimal order.
         ordered: list[tuple[str, PoolPassenger, GeoPoint | None]] = []
@@ -192,7 +193,9 @@ class PoolService:
             total_estimated_fare=total_fare,
             created_at=group.created_at,
             driver_start=driver_start,
-            route=route,
+            route=routed.points,
+            distance_m=routed.distance_m,
+            duration_s=routed.duration_s,
             congestion_zones=demo_congestion_zones(),
             stops=stops,
         )

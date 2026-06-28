@@ -13,7 +13,8 @@ from app.schemas.driver.trip import (
     DriverTripStatus,
     TripStatusUpdate,
 )
-from app.services.driver.geo_mock import build_route, demo_congestion_zones, geocode
+from app.services.driver.geo_mock import demo_congestion_zones, geocode
+from app.services.driver.routing import road_route
 
 # Trip statuses where a live tracking map is meaningful.
 _ACTIVE_STATUSES = {
@@ -184,11 +185,13 @@ class TripService:
 
         # Live tracking geometry only for in-flight trips.
         if trip.status in _ACTIVE_STATUSES and detail.pickup and detail.dropoff:
-            route = build_route([detail.pickup, detail.dropoff], avoid_congestion=True)
-            detail.route = route
+            routed = road_route([detail.pickup, detail.dropoff], avoid_congestion=True)
+            detail.route = routed.points
+            detail.distance_m = routed.distance_m
+            detail.duration_s = routed.duration_s
             detail.congestion_zones = demo_congestion_zones()
             detail.driver_position = _interpolate(
-                route, _PROGRESS_BY_STATUS.get(trip.status, 0.0)
+                routed.points, _PROGRESS_BY_STATUS.get(trip.status, 0.0)
             )
         return detail
 

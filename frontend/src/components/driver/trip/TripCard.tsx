@@ -5,7 +5,12 @@ import { RouteMap, type MapMarker } from "@/components/driver/map/RouteMap";
 import { TripActions } from "@/components/driver/trip/TripActions";
 import { TripStatusBadge } from "@/components/driver/trip/TripStatusBadge";
 import { TripStatusStepper } from "@/components/driver/trip/TripStatusStepper";
-import { formatDriverCurrency, formatDriverDateTime } from "@/features/driver/format";
+import {
+  formatDistance,
+  formatDriverCurrency,
+  formatDriverDateTime,
+  formatDuration,
+} from "@/features/driver/format";
 import { isActiveTripStatus } from "@/features/driver/tripLifecycle";
 import type { DriverTripDetail, DriverTripStatus } from "@/features/driver/types";
 
@@ -60,6 +65,18 @@ export function TripCard({ trip, isPending, onAction }: TripCardProps) {
           <span>Requested: {formatDriverDateTime(trip.requestedAt)}</span>
           {trip.completedAt ? (
             <span>Completed: {formatDriverDateTime(trip.completedAt)}</span>
+          ) : null}
+          {trip.distanceM !== null ? (
+            <span>
+              Quãng đường:{" "}
+              <span className="font-medium text-foreground">{formatDistance(trip.distanceM)}</span>
+            </span>
+          ) : null}
+          {trip.durationS !== null ? (
+            <span>
+              Thời gian:{" "}
+              <span className="font-medium text-foreground">{formatDuration(trip.durationS)}</span>
+            </span>
           ) : null}
         </div>
 

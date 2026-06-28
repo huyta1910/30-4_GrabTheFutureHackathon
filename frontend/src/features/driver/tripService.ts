@@ -29,6 +29,8 @@ interface RawDriverTripDetail extends RawDriverTrip {
   dropoff: RawGeo | null;
   driver_position: RawGeo | null;
   route: RawGeo[];
+  distance_m: number | null;
+  duration_s: number | null;
   congestion_zones: {
     lat: number;
     lng: number;
@@ -56,6 +58,8 @@ function mapTripDetail(raw: RawDriverTripDetail): DriverTripDetail {
     dropoff: mapGeoPoint(raw.dropoff),
     driverPosition: mapGeoPoint(raw.driver_position),
     route: mapGeoPoints(raw.route),
+    distanceM: raw.distance_m ?? null,
+    durationS: raw.duration_s ?? null,
     congestionZones: mapCongestionZones(raw.congestion_zones),
   };
 }

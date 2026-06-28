@@ -338,6 +338,93 @@ def assign_drivers_to_pools(
     return OptimizationResult(groups=tuple(groups), total_cost=total_cost)
 
 
+def assign_pools_to_drivers(
+    pools: Sequence[PassengerPool],
+    drivers: Sequence[Driver],
+) -> OptimizationResult:
+    """
+    Match pools to drivers when the two counts may differ.
+
+    This generalizes :func:`assign_drivers_to_pools`, which requires
+    ``len(pools) <= len(drivers)``. Here each driver still serves at most one
+    pool and each pool at most one driver, but only ``min(len(pools),
+    len(drivers))`` of them are matched at minimum total Held-Karp cost. Any
+    leftover pools (when pools outnumber drivers) are left unassigned and simply
+    excluded from the result, so the caller can keep them queued for a later
+    pass. Returns an empty result when either side is empty.
+    """
+
+    if not pools or not drivers:
+        return OptimizationResult(groups=(), total_cost=0.0)
+
+    for pool in pools:
+        if not pool.id:
+            raise ValueError("Pool id must be non-empty.")
+        if not pool.requests:
+            raise ValueError(f"Pool {pool.id} must contain at least one request.")
+        for request in pool.requests:
+            _validate_request(request)
+    for driver in drivers:
+        _validate_driver(driver)
+
+    pool_count = len(pools)
+    driver_count = len(drivers)
+    cost_matrix: list[list[float]] = [[INF] * driver_count for _ in pools]
+    route_orders: list[list[tuple[int, ...]]] = [[()] * driver_count for _ in pools]
+
+    for pool_index, pool in enumerate(pools):
+        member_indices = tuple(range(len(pool.requests)))
+
+        for driver_index, driver in enumerate(drivers):
+            if len(pool.requests) > driver.capacity:
+                continue
+
+            cost, route_order = _held_karp_indices(
+                driver.current_location,
+                pool.requests,
+                member_indices,
+            )
+            cost_matrix[pool_index][driver_index] = cost
+            route_orders[pool_index][driver_index] = route_order
+
+    # Hungarian needs rows <= columns, so orient the matrix on the smaller side
+    # and read the assignment back accordingly.
+    if pool_count <= driver_count:
+        assignment = _hungarian_min_cost(cost_matrix)
+        pairs = [(pool_index, assignment[pool_index]) for pool_index in range(pool_count)]
+    else:
+        transposed = [
+            [cost_matrix[pool_index][driver_index] for pool_index in range(pool_count)]
+            for driver_index in range(driver_count)
+        ]
+        assignment = _hungarian_min_cost(transposed)
+        pairs = [(assignment[driver_index], driver_index) for driver_index in range(driver_count)]
+
+    groups: list[RoutePlan] = []
+    total_cost = 0.0
+
+    for pool_index, driver_index in pairs:
+        route_cost = cost_matrix[pool_index][driver_index]
+        if route_cost == INF:
+            # No capacity-feasible driver for this pool; leave it unassigned.
+            continue
+
+        pool = pools[pool_index]
+        groups.append(
+            build_route_plan(
+                driver=drivers[driver_index],
+                requests=pool.requests,
+                member_indices=tuple(range(len(pool.requests))),
+                route_order_indices=route_orders[pool_index][driver_index],
+                cost=route_cost,
+                pool_id=pool.id,
+            )
+        )
+        total_cost += route_cost
+
+    return OptimizationResult(groups=tuple(groups), total_cost=total_cost)
+
+
 def pools_from_groups(groups: Sequence[RoutePlan]) -> tuple[PassengerPool, ...]:
     """Convert existing group output into driver-independent passenger pools."""
 

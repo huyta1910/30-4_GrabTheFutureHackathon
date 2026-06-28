@@ -4,6 +4,7 @@ from uuid import UUID
 
 from app.optimizer.backend_adapter import (
     DEFAULT_MAX_POOL_SIZE,
+    assign_booking_pools_to_drivers,
     booking_has_coordinates,
     optimize_booking_pools,
 )
@@ -75,12 +76,56 @@ class MatchingService:
             pools_created += 1
             bookings_matched += 1
 
+        # Stage 2: Hungarian-assign the freshly-built pools to the closest free
+        # drivers and activate those pools. Pools left without a driver (e.g.
+        # more pools than available drivers) stay pending for a later pass or a
+        # manual driver accept.
+        drivers_assigned = self._assign_drivers()
+
         self._repo.commit()
         return MatchingSummary(
             pools_created=pools_created,
             bookings_matched=bookings_matched,
             total_cost=total_cost,
+            drivers_assigned=drivers_assigned,
         )
+
+    def _assign_drivers(self) -> int:
+        """Assign available drivers to pending coordinate pools via Hungarian.
+
+        Returns the number of pools that received a driver.
+        """
+        drivers = self._repo.list_available_drivers()
+        if not drivers:
+            return 0
+
+        pending = self._repo.list_pending_pools_with_members()
+        pool_inputs: list[tuple[str, list]] = []
+        members_by_pool: dict[str, tuple] = {}
+        for group, members in pending:
+            bookings = [booking for _, booking in members if booking is not None]
+            if not bookings or not all(booking_has_coordinates(b) for b in bookings):
+                continue
+            pool_id = str(group.id)
+            pool_inputs.append((pool_id, bookings))
+            members_by_pool[pool_id] = (group, members)
+
+        if not pool_inputs:
+            return 0
+
+        result = assign_booking_pools_to_drivers(pool_inputs, drivers)
+        driver_by_id = {str(driver.id): driver for driver in drivers}
+
+        assigned = 0
+        for plan in result.groups:
+            entry = members_by_pool.get(plan.pool_id)
+            driver = driver_by_id.get(plan.driver_id)
+            if entry is None or driver is None:
+                continue
+            group, members = entry
+            self._repo.assign_pool_to_driver(group, driver, members)
+            assigned += 1
+        return assigned
 
 
 def _ensure_coordinates(booking) -> None:

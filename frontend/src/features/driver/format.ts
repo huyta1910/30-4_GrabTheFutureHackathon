@@ -31,3 +31,28 @@ export function formatDriverDateTime(value: string | null): string {
   }
   return dateTimeFormatter.format(new Date(value));
 }
+
+/** Real road distance (meters) -> "1,2 km" / "850 m". */
+export function formatDistance(meters: number | null): string {
+  if (meters === null) {
+    return "—";
+  }
+  if (meters < 1000) {
+    return `${Math.round(meters)} m`;
+  }
+  return `${(meters / 1000).toFixed(1).replace(".", ",")} km`;
+}
+
+/** Real road duration (seconds) -> "5 phút" / "1 giờ 12 phút". */
+export function formatDuration(seconds: number | null): string {
+  if (seconds === null) {
+    return "—";
+  }
+  const totalMinutes = Math.max(1, Math.round(seconds / 60));
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours > 0) {
+    return `${hours} giờ ${minutes} phút`;
+  }
+  return `${minutes} phút`;
+}

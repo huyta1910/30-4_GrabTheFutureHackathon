@@ -5,3 +5,4 @@ class MatchingSummary(BaseModel):
     pools_created: int
     bookings_matched: int
     total_cost: float
+    drivers_assigned: int = 0

@@ -27,6 +27,19 @@ class Settings(BaseSettings):
         validation_alias="BACKEND_CORS_ORIGINS",
     )
 
+    # Real road routing (VietMap Route API). When no key is set the driver
+    # services fall back to the straight-line mock polyline.
+    routing_enabled: bool = Field(default=True, validation_alias="ROUTING_ENABLED")
+    vietmap_api_key: str = Field(default="", validation_alias="VIETMAP_API_KEY")
+    vietmap_route_url: str = Field(
+        default="https://maps.vietmap.vn/api/route",
+        validation_alias="VIETMAP_ROUTE_URL",
+    )
+    routing_timeout_seconds: float = Field(
+        default=4.0,
+        validation_alias="ROUTING_TIMEOUT_SECONDS",
+    )
+
     @property
     def cors_origins(self) -> list[str]:
         return [origin.strip() for origin in self.backend_cors_origins.split(",") if origin.strip()]
